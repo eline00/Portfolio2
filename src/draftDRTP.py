@@ -72,6 +72,12 @@ class DRTP:
                     break
             except socket.timeout:
                 pass
+            
+    def send_file(self, file_name):
+        with open(file_name, 'rb') as f:
+            file_data = f.read()
+        self.send_data(file_data)
+
 
     def send_data(self, data):
         if self.reliability_method == 'stop_and_wait':
