@@ -76,5 +76,4 @@ if __name__ == "__main__":
         print("Invalid mode. Choose 'sender' or 'receiver'.")
         sys.exit(1)
 
-    def settimeout(self, timeout):
         
