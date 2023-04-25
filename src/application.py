@@ -2,6 +2,14 @@ import argparse
 from DRTP import *
 
 def server(local_port, file_name, reliability_func, test_case=None):
+    
+    # Dictionary of available reliablility functions
+    reliability_functions = {
+        'stop-and-wait': stop_and_wait,
+        'GBN': GBN,
+        'SR': SR,
+    }
+    
     # Create DRTP object and listen on local_port
     drtp = DRTP(local_port)
 
@@ -17,6 +25,9 @@ def server(local_port, file_name, reliability_func, test_case=None):
             # If data is None, then the transfer is complete
             if not data:
                 break
+            
+            # Call the chosen reliability function with the received data and address
+            reliability_functions[reliability_func](drtp.socket, data)
 
             # Write received data to file
             f.write(data)
@@ -25,6 +36,14 @@ def server(local_port, file_name, reliability_func, test_case=None):
     drtp.close()
 
 def client(remote_address, remote_port, file_name, reliability_func, test_case=None):
+    
+    # Dictionaly of available reliablility functions
+    reliability_functions = {
+        'stop-and-wait': stop_and_wait,
+        'GBN': GBN,
+        'SR': SR,
+    }
+    
     # Create DRTP object and connect to remote_address:remote_port
     drtp = DRTP(0)  # local_port will be assigned by the operating system
     drtp.connect(remote_address, remote_port)
@@ -38,6 +57,9 @@ def client(remote_address, remote_port, file_name, reliability_func, test_case=N
             # If there is no more data, then the transfer is complete
             if not data:
                 break
+            
+            # Call the chosen reliability function with the received data and address
+            reliability_functions[reliability_func](drtp.socket, data)
 
             # Send data using DRTP protocol
             drtp.send(data)
