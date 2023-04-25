@@ -8,7 +8,7 @@ def server(local_port, file_name, reliability_func, test_case=None):
     # Wait for connection from client
     drtp.connect(remote_address, remote_port)
 
-    # Receive file from client and save to file_name
+    # Receive file from client and write to file_name
     with open(file_name, 'wb') as f:
         while True:
             # Receive data using DRTP protocol

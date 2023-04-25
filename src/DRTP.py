@@ -27,3 +27,6 @@ class DRTP:
     def close(self):
         # Gracefully close the DRTP protocol and the connection
         # ...
+
+    def settimeout(self, timeout):
+        
