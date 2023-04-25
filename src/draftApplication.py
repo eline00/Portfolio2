@@ -1,10 +1,8 @@
 import argparse
-from draftDRTP import *
+from DRTPdraft2 import *
 
 
 def server(local_ip, local_port, file_name, reliability_func):
-	# Creating DRTP instance
-	drtp = DRTP(local_ip, local_port, reliability_func)
 	
 	print('-' * 60)
 	print(f'Server is listening on port {local_port}')
@@ -12,7 +10,7 @@ def server(local_ip, local_port, file_name, reliability_func):
 
 	while True:
 		# Connecting to client
-		drtp.establish_receiver_connection()
+		stop_and_wait(sock, addr, msg)
 
 		print(f'\nA client is connected with {local_ip}:{local_port}\n')
 
