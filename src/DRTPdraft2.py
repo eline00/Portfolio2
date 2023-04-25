@@ -12,7 +12,7 @@ WINDOW_SIZE = 16
 SYN = 0x08
 ACK = 0x04
 FIN = 0x02
-RST = 0x01
+RESET = 0x01
 
 HEADER_SIZE = 12
 PACKET_SIZE = 1472
@@ -40,52 +40,55 @@ def stop_and_wait(sock, addr, msg):
             sock.sendto(packet, addr)
             sock.settimeout(TIMEOUT)
             try:
-                response, _ = sock.recvfrom(PACKET_SIZE)
-                resp_seq_number, resp_ack_number, resp_flags, resp_window, resp_msg_body = parse_packet(response)
-                if resp_ack_number == seq_number + 1 and resp_flags & ACK:
-                    seq_number += 1
+                response, address = sock.recvfrom(PACKET_SIZE)
+                received_seq, received_ack, received_flags, received_window, received_msg = parse_packet(response)
+                if resceived_ack == seq + 1 and recieved_flags & ACK:
+                    seq += 1
                     break
             except socket.timeout:
                 continue
 
-    fin_packet = create_packet(seq_number, ack_number, FIN, WINDOW)
+    fin_packet = create_packet(seq, ack, FIN, WINDOW)
     sock.sendto(fin_packet, addr)
 
 def gbn(sock, addr, msg):
     base = 0
-    next_seq_number = 0
+    next_seq = 0
     window_size = 5
+    
+    # Initialize a list of empty byte strings with a fixed size
+    packets = [b""]
+    for i in range(1, window_size):
+        packets.append(b"")
 
     def resend_unacked_packets():
         nonlocal base
-        for i in range(base, next_seq_number):
+        for i in range(base, next_seq):
             sock.sendto(packets[i % window_size], addr)
         timer = Timer(TIMEOUT, resend_unacked_packets)
         timer.start()
 
-    packets = [b'' for _ in range(window_size)]
-
     while base < len(msg):
-        while next_seq_number < base + window_size and next_seq_number * APP_DATA_SIZE < len(msg):
-            start_idx = next_seq_number * APP_DATA_SIZE
-            end_idx = start_idx + APP_DATA_SIZE
+        while next_seq < base + window_size and next_seq * APPLICATION_SIZE < len(msg):
+            start_idx = next_seq * APPLICATION_SIZE
+            end_idx = start_idx + APPLICATION_SIZE
             data_chunk = msg[start_idx:end_idx]
-            packet = create_packet(next_seq_number, 0, ACK, WINDOW, data_chunk)
-            packets[next_seq_number % window_size] = packet
+            packet = create_packet(next_seq, 0, ACK, WINDOW, data_chunk)
+            packets[next_seq % window_size] = packet
             sock.sendto(packet, addr)
-            next_seq_number += 1
+            next_seq += 1
 
         sock.settimeout(TIMEOUT)
         try:
-            response, _ = sock.recvfrom(PACKET_SIZE)
-            _, resp_ack_number, resp_flags, _, _ = parse_packet(response)
+            response, address = sock.recvfrom(PACKET_SIZE)
+            received_seq, received_ack, received_flags, received_window, received_msg = parse_packet(response)
 
-            if resp_flags & ACK:
-                base = resp_ack_number
+            if received_flags & ACK:
+                base = received_ack
         except socket.timeout:
             resend_unacked_packets()
 
-    fin_packet = create_packet(next_seq_number, 0, FIN, WINDOW)
+    fin_packet = create_packet(next_seq, 0, FIN, WINDOW)
     sock.sendto(fin_packet, addr)
 
 def sr(sock, addr, msg):
