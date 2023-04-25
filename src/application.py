@@ -99,9 +99,8 @@ def stop_and_wait(drtp, data):
             continue
 
 
-def gbn(drtp, data, window_size):
-    # Set window size to 5
-    window_size = 5
+def gbn(drtp, addr, data, window_size):
+
     packets = [data[i:i+1460] for i in range(0, len(data), 1460)]
     expected_ack = 1
     i = 0
@@ -126,9 +125,7 @@ def gbn(drtp, data, window_size):
             # Resend packets from expected_ack onwards
             i = expected_ack - 1
 
-def sr(drtp, data):
-    # Set window size to 5
-    window_size = 5
+def sr(drtp, data,window_size):
     packets = [data[i:i+1460] for i in range(0, len(data), 1460)]
     expected_ack = 1
     i = 0
@@ -164,12 +161,12 @@ def sr(drtp, data):
 
 
     with open(file_name, 'rb') as f:
-    while True:
+        while True:
         # Read file in chunks of 1460 bytes (maximum data size for DRTP packet)
-        data = f.read(1460)
+         data = f.read(1460)
 
         # If there is no more data, then the transfer is complete
-        if not data:
+         if not data:
             break
 
         # Send data using DRTP protocol with reliability function
@@ -191,19 +188,20 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if args.reliability_function == 'stop-and-wait':
+        reliability_func = stop_and_wait
+    elif args.reliability_function == 'GBN':
+        reliability_func = gbn
+    elif args.reliability_function == 'SR':
+        reliability_func = sr
+    else:
+        parser.error('Invalid reliability function specified')
+
     if args.server:
-        server(args.local_port, args.file_name, args.reliability_function, args.test_case)
+        server(args.local_port, args.file_name, reliability_func, args.test_case)
     elif args.client:
-        client(args.remote_address, args.remote_port, args.file_name, args.reliability_function, args.test_case)
+        client(args.remote_address, args.remote_port, args.file_name, reliability_func, args.test_case)
     else:
         parser.print_help()
 
     
-    if args.reliability_function == 'stop-and-wait':
-    reliability_func = stop_and_wait
-elif args.reliability_function == 'GBN':
-    reliability_func = gbn
-elif args.reliability_function == 'SR':
-    reliability_func = sr
-else:
-    parser.error('Invalid reliability function specified')
