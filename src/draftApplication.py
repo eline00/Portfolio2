@@ -1,56 +1,48 @@
-import argparse
+import os
+import sys
 from DRTP import DRTP
 
-def server(local_port, file_name, reliability_func):
-    drtp = DRTP(local_port)
+def main():
+    if len(sys.argv) != 6:
+        print("Usage: python application.py <IP> <port> <reliability_method> <send|recv> <file>")
+        return
 
-    drtp.accept_connection()
+    ip, port, reliability_method, mode, file_path = sys.argv[1], int(sys.argv[2]), sys.argv[3], sys.argv[4], sys.argv[5]
 
-    drtp.receive_file(file_name, reliability_func)
+    if mode not in ['send', 'recv']:
+        print("Invalid mode. Choose 'send' or 'recv'.")
+        return
 
-    drtp.close()
+    if reliability_method not in ['stop_and_wait', 'gbn', 'sr']:
+        print("Invalid reliability method. Choose 'stop_and_wait', 'gbn', or 'sr'.")
+        return
 
-def client(remote_address, remote_port, file_name, reliability_func):
-    drtp = DRTP(0)  # local_port will be assigned by the operating system
-    drtp.connect(remote_address, remote_port)
+    drtp = DRTP(ip, port, reliability_method)
 
-    drtp.send_file(file_name, reliability_func)
+    if mode == 'send':
+        if not os.path.exists(file_path):
+            print("File does not exist.")
+            return
 
-    drtp.close()
+        with open(file_path, 'rb') as f:
+            data = f.read()
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
-    parser.add_argument('-s', '--server', action='store_true', help='Run as server')
-    parser.add_argument('-c', '--client', action='store_true', help='Run as client')
-    parser.add_argument('-a', '--remote-address', help='Remote server IP address')
-    parser.add_argument('-p', '--remote-port', type=int, help='Remote server port number')
-    parser.add_argument('-l', '--local-port', type=int, default=5000, help='Local port number (default: 5000)')
-    parser.add_argument('-f', '--file-name', help='File name to transfer')
-    parser.add_argument('-r', '--reliability-function', choices=['stop-and-wait', 'GBN', 'SR'], default='stop-and-wait', help='Reliability function to use (default: stop-and-wait)')
+        drtp.establish_connection()
+        drtp.send_data(data)
+        drtp.close_connection()
 
-    args = parser.parse_args()
+    elif mode == 'recv':
+        drtp.establish_connection()
+        data = drtp.receive_data(file_path)
+        drtp.close_connection()
 
-    if args.reliability_function == 'stop-and-wait':
-        reliability_func = DRTP.stop_and_wait
-    elif args.reliability_function == 'GBN':
-        reliability_func = DRTP.gbn
-    elif args.reliability_function == 'SR':
-        reliability_func = DRTP.sr
-    else:
-        parser.error('Invalid reliability function specified')
-
-    if args.server:
-        server(args.local_port, args.file_name, reliability_func)
-    elif args.client:
-        client(args.remote_address, args.remote_port, args.file_name, reliability_func)
-    else:
-        parser.print_help()
+if __name__ == "__main__":
+    main()
 
 """
-The main changes in the code are:
+To run the code, make sure you have the DRTP.py and application.py files in the same directory. Then, use the following command in the terminal to send or receive a file:
 
-    Removed unused functions and import statements.
-    Changed the reliability function names to match the ones in the DRTP class.
-    Updated the server and client functions to use the receive_file, send_file, and accept_connection methods from the DRTP class.
+    To send a file: python application.py <IP> <port> <reliability_method> send <file>
+    To receive a file: python application.py <IP> <port> <reliability_method> recv <file>
 
-With these changes, the application code should now work well with the provided DRTP class."""
+Replace <IP>, <port>, <reliability_method>, and <file> with the appropriate values for your use case. <reliability_method> should be one of the following: 'stop_and_wait', 'gbn', or 'sr'."""
