@@ -4,11 +4,13 @@ import time
 from struct import *
 
 header_format = '!IIHH'
-
+        
 def create_packet(seq, ack, flags, win, data):
     header = pack(header_format, seq, ack, flags, win)
     packet = header + data
     return packet
+
+
 
 
 def parse_header(header):
@@ -75,5 +77,4 @@ if __name__ == "__main__":
     else:
         print("Invalid mode. Choose 'sender' or 'receiver'.")
         sys.exit(1)
-
-        
+    
