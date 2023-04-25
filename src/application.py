@@ -3,13 +3,6 @@ from DRTP import *
 
 def server(local_port, file_name, reliability_func, test_case=None):
     
-    # Dictionary of available reliablility functions
-    reliability_functions = {
-        'stop-and-wait': stop_and_wait,
-        'GBN': GBN,
-        'SR': SR,
-    }
-    
     # Create DRTP object and listen on local_port
     drtp = DRTP(local_port)
 
@@ -26,8 +19,12 @@ def server(local_port, file_name, reliability_func, test_case=None):
             if not data:
                 break
             
-            # Call the chosen reliability function with the received data and address
-            reliability_functions[reliability_func](drtp.socket, data)
+            if reliability_func == "stop-and-wait":
+                stop_and_wait(drtp.socket, data)
+            elif reliability_func == "gbn":
+                gbn(drtp.socket, data, window_size)
+            elif reliability_func == "sr":
+                sr(drtp.socket, data, window_size)
 
             # Write received data to file
             f.write(data)
@@ -35,14 +32,7 @@ def server(local_port, file_name, reliability_func, test_case=None):
     # Gracefully close the DRTP protocol and the connection
     drtp.close()
 
-def client(remote_address, remote_port, file_name, reliability_func, test_case=None):
-    
-    # Dictionaly of available reliablility functions
-    reliability_functions = {
-        'stop-and-wait': stop_and_wait,
-        'GBN': GBN,
-        'SR': SR,
-    }
+def client(remote_address, remote_port, file_name, reliability_func, window_size, test_case=None):
     
     # Create DRTP object and connect to remote_address:remote_port
     drtp = DRTP(0)  # local_port will be assigned by the operating system
@@ -58,8 +48,12 @@ def client(remote_address, remote_port, file_name, reliability_func, test_case=N
             if not data:
                 break
             
-            # Call the chosen reliability function with the received data and address
-            reliability_functions[reliability_func](drtp.socket, data)
+            if reliability_func == "stop-and-wait":
+                stop_and_wait(drtp.socket, data)
+            elif reliability_func == "gbn":
+                gbn(drtp.socket, data, window_size)
+            elif reliability_func == "sr":
+                sr(drtp.socket, data, window_size)
 
             # Send data using DRTP protocol
             drtp.send(data)
@@ -105,7 +99,7 @@ def stop_and_wait(drtp, data):
             continue
 
 
-def gbn(drtp, addr, data, window_size):
+def gbn(drtp, data, window_size):
     # Set window size to 5
     window_size = 5
     packets = [data[i:i+1460] for i in range(0, len(data), 1460)]
