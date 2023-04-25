@@ -50,31 +50,116 @@ def create_header(seq_num, ack_num, flags, window):
     # Your header creation code here
 
 # Connection establishment functions
-def send_syn(sock, addr):
+def send_syn(drtp, addr):
     # Your code for sending SYN packet
 
-def send_ack(sock, addr, seq_num, ack_num):
+def send_ack(drtp, addr, seq_num, ack_num):
     # Your code for sending ACK packet
 
-def send_fin(sock, addr, seq_num):
+def send_fin(drtp, addr, seq_num):
     # Your code for sending FIN packet
 
 # Data transfer functions
-def send_data(sock, addr, data, seq_num, window):
+def send_data(drtp, addr, data, seq_num, window):
     # Your code for sending data packet
 
-def receive_data(sock, seq_num, window):
+def receive_data(drtp, seq_num, window):
     # Your code for receiving data packet
 
 # Reliability functions
-def stop_and_wait(sock, addr, data):
+def stop_and_wait(drtp, data):
     # Your stop-and-wait implementation
+    # Send data using DRTP protocol
+    while True:
+        drtp.send(data)
 
-def GBN(sock, addr, data, window_size):
-    # Your Go-Back-N implementation
+        try:
+            # Wait for ACK
+            ack = drtp.receive()
+            if ack:
+                break
+        except socket.timeout:
+            # If timeout, resend the data
+            continue
 
-def SR(sock, addr, data, window_size):
-    # Your Selective-Repeat implementation
+
+def gbn(drtp, addr, data, window_size):
+    # Set window size to 5
+    window_size = 5
+    packets = [data[i:i+1460] for i in range(0, len(data), 1460)]
+    expected_ack = 1
+    i = 0
+
+    while i < len(packets):
+        # Send packets in the window
+        for j in range(i, min(i+window_size, len(packets))):
+            drtp.send(packets[j])
+
+        # Wait for ACK
+        try:
+            ack = drtp.receive()
+        except socket.settimeout:
+            # If timeout, resend packets in the window
+            continue
+
+        # Check if ACK matches expected_ack
+        if ack == expected_ack:
+            expected_ack += 1
+            i += 1
+        else:
+            # Resend packets from expected_ack onwards
+            i = expected_ack - 1
+
+def sr(drtp, data):
+    # Set window size to 5
+    window_size = 5
+    packets = [data[i:i+1460] for i in range(0, len(data), 1460)]
+    expected_ack = 1
+    i = 0
+    buffer = {}
+
+    while i < len(packets):
+        # Send packets in the window
+        for j in range(i, min(i+window_size, len(packets))):
+            drtp.send(packets[j])
+
+        # Wait for ACK
+        try:
+            ack = drtp.receive()
+        except socket.timeout:
+            # If timeout, resend packets in the window
+            continue
+
+        # Check if ACK matches expected_ack
+        if ack in buffer:
+            del buffer[ack]
+
+        while expected_ack in buffer:
+            drtp.send(buffer[expected_ack])
+            del buffer[expected_ack]
+            expected_ack += 1
+
+        if ack == expected_ack:
+            expected_ack += 1
+            i += 1
+        else:
+            buffer[ack] = packets[ack-1]
+
+
+
+    with open(file_name, 'rb') as f:
+    while True:
+        # Read file in chunks of 1460 bytes (maximum data size for DRTP packet)
+        data = f.read(1460)
+
+        # If there is no more data, then the transfer is complete
+        if not data:
+            break
+
+        # Send data using DRTP protocol with reliability function
+        reliability_func(drtp, data)
+
+
 
 if __name__ == '__main__':
     # Parse command line arguments
@@ -96,3 +181,13 @@ if __name__ == '__main__':
         client(args.remote_address, args.remote_port, args.file_name, args.reliability_function, args.test_case)
     else:
         parser.print_help()
+
+    
+    if args.reliability_function == 'stop-and-wait':
+    reliability_func = stop_and_wait
+elif args.reliability_function == 'GBN':
+    reliability_func = gbn
+elif args.reliability_function == 'SR':
+    reliability_func = sr
+else:
+    parser.error('Invalid reliability function specified')
