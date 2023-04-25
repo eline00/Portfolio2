@@ -46,12 +46,13 @@ def client(remote_ip, remote_port, file_name, reliability_func):
     drtp.close_connection()
 
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
     parser.add_argument('-s', '--server', action='store_true', help='Run as server')
     parser.add_argument('-c', '--client', action='store_true', help='Run as client')
-    parser.add_argument('-I', '--remote-ip', help='Remote server IP address')
-    parser.add_argument('-p', '--port', type=int, help='Server port number')
+    parser.add_argument('-I', '--remote-ip', default='127.0.0.1', help='Remote server IP address')
+    parser.add_argument('-p', '--port', type=int, default=8080, help='Server port number')
     parser.add_argument('-b', '--bind', type=str, help='Local IP address')
     parser.add_argument('-f', '--file-name', type=str, help='File name to transfer')
     parser.add_argument('-r', '--reliability-function', choices=['stop_and_wait', 'gbn', 'sr'], default='stop_and_wait',
