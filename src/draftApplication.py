@@ -1,18 +1,24 @@
 import argparse
 from DRTP import DRTP
 
-def server(local_port, file_name, reliability_func):
-    drtp = DRTP(local_port)
+def server(local_ip, local_port, file_name, reliability_func):
+    # Creating DRTP instance
+    drtp = DRTP(local_ip, local_port, reliability_func)
 
-    drtp.accept_connection()
+    # Connecting to client
+    drtp.establish_reciever_connection()
 
-    drtp.receive_file(file_name, reliability_func)
+    # Recieveing a file from client
+    drtp.receive_data(file_name)
 
-    drtp.close()
+    # Closing connection
+    drtp.close_connection()
 
-def client(remote_address, remote_port, file_name, reliability_func):
-    drtp = DRTP(0)  # local_port will be assigned by the operating system
-    drtp.connect(remote_address, remote_port)
+def client(remote_ip, remote_port, file_name, reliability_func):
+    # Creating DRTP instance
+    drtp = DRTP(remote_ip, remote_port, reliability_func)  
+    
+    drtp.establish_sender_connection()
 
     drtp.send_file(file_name, reliability_func)
 
@@ -22,9 +28,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
     parser.add_argument('-s', '--server', action='store_true', help='Run as server')
     parser.add_argument('-c', '--client', action='store_true', help='Run as client')
-    parser.add_argument('-a', '--remote-ip', help='Remote server IP address')
-    parser.add_argument('-p', '--remote-port', type=int, help='Remote server port number')
-    parser.add_argument('-l', '--local-port', type=int, default=5000, help='Local port number (default: 5000)')
+    parser.add_argument('-i', '--remote-ip', help='Remote server IP address')
+    parser.add_argument('-p', '--port', type=int, help='Server port number')
+    parser.add_argument('-b', '--bind', type=str, help='Local IP address')
     parser.add_argument('-f', '--file-name', help='File name to transfer')
     parser.add_argument('-r', '--reliability-function', choices=['stop-and-wait', 'GBN', 'SR'], default='stop-and-wait', help='Reliability function to use (default: stop-and-wait)')
 
@@ -40,9 +46,9 @@ if __name__ == '__main__':
         parser.error('Invalid reliability function specified')
 
     if args.server:
-        server(args.local_port, args.file_name, reliability_func)
+        server(args.bind, args.port, args.file_name, reliability_func)
     elif args.client:
-        client(args.remote_address, args.remote_port, args.file_name, reliability_func)
+        client(args.remote_ip, args.port, args.file_name, reliability_func)
     else:
         parser.print_help()
 
