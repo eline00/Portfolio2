@@ -1,5 +1,5 @@
 import argparse
-from DRTP import DRTP
+from draftDRTP import *
 
 def server(local_ip, local_port, file_name, reliability_func):
     # Creating DRTP instance
@@ -22,13 +22,13 @@ def client(remote_ip, remote_port, file_name, reliability_func):
 
     drtp.send_file(file_name, reliability_func)
 
-    drtp.close()
+    drtp.close_connection()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
     parser.add_argument('-s', '--server', action='store_true', help='Run as server')
     parser.add_argument('-c', '--client', action='store_true', help='Run as client')
-    parser.add_argument('-i', '--remote-ip', help='Remote server IP address')
+    parser.add_argument('-I', '--remote-ip', help='Remote server IP address')
     parser.add_argument('-p', '--port', type=int, help='Server port number')
     parser.add_argument('-b', '--bind', type=str, help='Local IP address')
     parser.add_argument('-f', '--file-name', help='File name to transfer')
