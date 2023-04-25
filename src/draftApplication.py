@@ -1,0 +1,56 @@
+import argparse
+from DRTP import DRTP
+
+def server(local_port, file_name, reliability_func):
+    drtp = DRTP(local_port)
+
+    drtp.accept_connection()
+
+    drtp.receive_file(file_name, reliability_func)
+
+    drtp.close()
+
+def client(remote_address, remote_port, file_name, reliability_func):
+    drtp = DRTP(0)  # local_port will be assigned by the operating system
+    drtp.connect(remote_address, remote_port)
+
+    drtp.send_file(file_name, reliability_func)
+
+    drtp.close()
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
+    parser.add_argument('-s', '--server', action='store_true', help='Run as server')
+    parser.add_argument('-c', '--client', action='store_true', help='Run as client')
+    parser.add_argument('-a', '--remote-address', help='Remote server IP address')
+    parser.add_argument('-p', '--remote-port', type=int, help='Remote server port number')
+    parser.add_argument('-l', '--local-port', type=int, default=5000, help='Local port number (default: 5000)')
+    parser.add_argument('-f', '--file-name', help='File name to transfer')
+    parser.add_argument('-r', '--reliability-function', choices=['stop-and-wait', 'GBN', 'SR'], default='stop-and-wait', help='Reliability function to use (default: stop-and-wait)')
+
+    args = parser.parse_args()
+
+    if args.reliability_function == 'stop-and-wait':
+        reliability_func = DRTP.stop_and_wait
+    elif args.reliability_function == 'GBN':
+        reliability_func = DRTP.gbn
+    elif args.reliability_function == 'SR':
+        reliability_func = DRTP.sr
+    else:
+        parser.error('Invalid reliability function specified')
+
+    if args.server:
+        server(args.local_port, args.file_name, reliability_func)
+    elif args.client:
+        client(args.remote_address, args.remote_port, args.file_name, reliability_func)
+    else:
+        parser.print_help()
+
+"""
+The main changes in the code are:
+
+    Removed unused functions and import statements.
+    Changed the reliability function names to match the ones in the DRTP class.
+    Updated the server and client functions to use the receive_file, send_file, and accept_connection methods from the DRTP class.
+
+With these changes, the application code should now work well with the provided DRTP class."""
