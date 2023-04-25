@@ -8,12 +8,17 @@ def server(local_ip, local_port, file_name, reliability_func):
 
     print('-' * 60)
     print(f'Server is listening on port {local_port}')
+    print(f'Using reliability function: {args.reliability_function}')
     print('-' * 60 + '\n')
 
     while True:
         # Receiving a file from the client
         print(f'A client is connected with {local_ip}:{local_port}\n')
-        drtp.receive_data(file_name)
+        success = drtp.receive_data(file_name)
+        if success:
+            print("The transfer was successful!")
+        else:
+            print("The transfer failed.")
 
     # Closing connection
     drtp.close_connection()
@@ -26,12 +31,17 @@ def client(remote_ip, remote_port, file_name, reliability_func):
 
     print('\n' + '-' * 70)
     print(f"A client connecting to server {remote_ip}, port {remote_port}")
+    print(f'Using reliability function: {args.reliability_function}')
     print('-' * 70)
 
     while True:
         print(f"Client connected with {remote_ip}, port {remote_port}\n")
 
-        drtp.send_file(file_name)
+        success = drtp.send_file(file_name)
+        if success:
+            print("The transfer was successful!")
+        else:
+            print("The transfer failed.")
 
     drtp.close_connection()
 
@@ -40,7 +50,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
     parser.add_argument('-s', '--server', action='store_true', help='Run as server')
     parser.add_argument('-c', '--client', action='store_true', help='Run as client')
-    parser.add_argument('-i', '--remote-ip', help='Remote server IP address')
+    parser.add_argument('-I', '--remote-ip', help='Remote server IP address')
     parser.add_argument('-p', '--port', type=int, help='Server port number')
     parser.add_argument('-b', '--bind', type=str, help='Local IP address')
     parser.add_argument('-f', '--file-name', type=str, help='File name to transfer')
