@@ -45,14 +45,36 @@ def client(remote_address, remote_port, file_name, reliability_func, test_case=N
     # Gracefully close the DRTP protocol and the connection
     drtp.close()
     
-def stop_and_wait():
-    return
+# Define the DRTP header structure
+def create_header(seq_num, ack_num, flags, window):
+    # Your header creation code here
 
-def GBN():
-    return
+# Connection establishment functions
+def send_syn(sock, addr):
+    # Your code for sending SYN packet
 
-def SR():
-    return
+def send_ack(sock, addr, seq_num, ack_num):
+    # Your code for sending ACK packet
+
+def send_fin(sock, addr, seq_num):
+    # Your code for sending FIN packet
+
+# Data transfer functions
+def send_data(sock, addr, data, seq_num, window):
+    # Your code for sending data packet
+
+def receive_data(sock, seq_num, window):
+    # Your code for receiving data packet
+
+# Reliability functions
+def stop_and_wait(sock, addr, data):
+    # Your stop-and-wait implementation
+
+def GBN(sock, addr, data, window_size):
+    # Your Go-Back-N implementation
+
+def SR(sock, addr, data, window_size):
+    # Your Selective-Repeat implementation
 
 if __name__ == '__main__':
     # Parse command line arguments
