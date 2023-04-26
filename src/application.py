@@ -11,14 +11,14 @@ def server(local_ip, local_port, file_name, reliability_func):
     drtp = DRTP(local_ip, local_port, reliability_func)
     drtp.establish_receiver_connection()
 
-    while True:
-        # Receiving a file from the client
-        print(f'A client is connected with {local_ip}:{local_port}\n')
-        success = drtp.receive_data(file_name)
-        if success:
-            print("The transfer was successful!")
-        else:
-            print("The transfer failed.")
+    
+    # Receiving a file from the client
+    print(f'A client is connected with {local_ip}:{local_port}\n')
+    success = drtp.receive_data(file_name)
+    if success:
+        print("The transfer was successful!")
+    else:
+        print("The transfer failed.")
 
     # Closing connection
     drtp.close_connection()
@@ -35,15 +35,13 @@ def client(remote_ip, remote_port, file_name, reliability_func):
     drtp.establish_sender_connection()
 
     
+    print(f"Client connected with {remote_ip}, port {remote_port}\n")
 
-    while True:
-        print(f"Client connected with {remote_ip}, port {remote_port}\n")
-
-        success = drtp.send_file(file_name)
-        if success:
-            print("The transfer was successful!")
-        else:
-            print("The transfer failed.")
+    success = drtp.send_file(file_name)
+    if success:
+        print("The transfer was successful!")
+    else:
+        print("The transfer failed.")
 
     drtp.close_connection()
 
