@@ -34,8 +34,8 @@ def client(remote_ip, remote_port, file_name, reliability_func):
     drtp = DRTP(remote_ip, remote_port, reliability_func)
     drtp.establish_sender_connection()
 
-    
-    print(f"Client connected with {remote_ip}, port {remote_port}\n")
+    while True:
+        print(f"Client connected with {remote_ip}, port {remote_port}\n")
 
     success = drtp.send_file(file_name)
     if success:
@@ -44,7 +44,6 @@ def client(remote_ip, remote_port, file_name, reliability_func):
         print("The transfer failed.")
 
     drtp.close_connection()
-
 
 
 if __name__ == '__main__':

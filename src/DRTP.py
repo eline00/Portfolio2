@@ -5,8 +5,7 @@ import threading
 
 
 class DRTP:
-
-    HEADER_FORMAT = '!IIHH'
+    HEADER_FORMAT = '!IIHH'     #4+4+2+2=12 bytes
     HEADER_SIZE = calcsize(HEADER_FORMAT)
 
     def __init__(self, ip, port, reliability_method, timeout=0.5, window_size=5):
@@ -35,41 +34,49 @@ class DRTP:
         # Three-way handshake implementation
         # Sender
         if self.reliability_method == 'send':
-            seq = 0
-            ack = 0
-            syn_flag = 1 << 3
-            self.socket.sendto(self.create_packet(seq, ack, syn_flag, 0, b''), (self.ip, self.port))
-            while True:
-                try:
-                    data, _ = self.socket.recvfrom(1472)
-                    header = data[:self.HEADER_SIZE]
-                    seq, ack, flags, win = self.parse_header(header)
-                    syn, ack_flag, fin = self.parse_flags(flags)
-                    if syn and ack_flag:
-                        seq = 0
-                        ack = 1
-                        ack_flag = 1 << 2
-                        self.socket.sendto(self.create_packet(seq, ack, ack_flag, 0, b''), (self.ip, self.port))
-                        break
-                except socket.timeout:
-                    self.socket.sendto(self.create_packet(seq, ack, syn_flag, 0, b''), (self.ip, self.port))
-        # Receiver
+            self.establish_sender_connection()
         elif self.reliability_method == 'recv':
-            while True:
-                try:
-                    data, addr = self.socket.recvfrom(1472)
-                    header = data[:self.HEADER_SIZE]
-                    seq, ack, flags, win = self.parse_header(header)
-                    syn, ack_flag, fin = self.parse_flags(flags)
-                    if syn:
-                        seq = 0
-                        ack = 1
-                        syn_flag = 1 << 3
-                        ack_flag = 1 << 2
-                        self.socket.sendto(self.create_packet(seq, ack, syn_flag | ack_flag, 0, b''), addr)
-                        break
-                except socket.timeout:
-                    pass
+            self.establish_receiver_connection()
+
+    # Establishes the three-way handshake for connection establishment
+    def establish_sender_connection(self):
+        seq = 0
+        ack = 0
+        syn_flag = 1 << 3
+        self.socket.sendto(self.create_packet(seq, ack, syn_flag, 0, b''), (self.ip, self.port))
+        while True:
+            try:
+                data, _ = self.socket.recvfrom(1472)
+                header = data[:self.HEADER_SIZE]
+                seq, ack, flags, win = self.parse_header(header)
+                syn, ack_flag, fin = self.parse_flags(flags)
+                if syn and ack_flag:
+                    seq = 0
+                    ack = 1
+                    ack_flag = 1 << 2
+                    self.socket.sendto(self.create_packet(seq, ack, ack_flag, 0, b''), (self.ip, self.port))
+                    break
+            except socket.timeout:
+                self.socket.sendto(self.create_packet(seq, ack, syn_flag, 0, b''), (self.ip, self.port))
+        print("A connection has been established.")
+
+    def establish_receiver_connection(self):
+        while True:
+            try:
+                data, addr = self.socket.recvfrom(1472)
+                header = data[:self.HEADER_SIZE]
+                seq, ack, flags, win = self.parse_header(header)
+                syn, ack_flag, fin = self.parse_flags(flags)
+                if syn:
+                    seq = 0
+                    ack = 1
+                    syn_flag = 1 << 3
+                    ack_flag = 1 << 2
+                    self.socket.sendto(self.create_packet(seq, ack, syn_flag | ack_flag, 0, b''), addr)
+                    break
+            except socket.timeout:
+                pass
+        print("A connection has been established.")
 
     def send_data(self, data):
         if self.reliability_method == 'stop_and_wait':
