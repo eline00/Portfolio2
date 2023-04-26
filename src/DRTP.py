@@ -5,7 +5,7 @@ import threading
 
 
 class DRTP:
-    HEADER_FORMAT = '!IIHH'
+    HEADER_FORMAT = '!IIHH'     #4+4+2+2=12 bytes
     HEADER_SIZE = calcsize(HEADER_FORMAT)
 
     def __init__(self, ip, port, reliability_method, timeout=0.5, window_size=5):
@@ -36,6 +36,7 @@ class DRTP:
         elif self.reliability_method == 'recv':
             self.establish_receiver_connection()
 
+    # Establishes the three-way handshake for connection establishment
     def establish_sender_connection(self):
         seq = 0
         ack = 0
