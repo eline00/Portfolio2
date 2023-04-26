@@ -5,7 +5,7 @@ import threading
 
 
 class DRTP:
-    HEADER_FORMAT = '!IIHH'     #4+4+2+2=12 bytes
+    HEADER_FORMAT = '!IIHH'    # 4+4+2+2=12 bytes
     HEADER_SIZE = calcsize(HEADER_FORMAT)
 
     def __init__(self, ip, port, reliability_method, timeout=0.5, window_size=5):
@@ -56,6 +56,7 @@ class DRTP:
                     break
             except socket.timeout:
                 self.socket.sendto(self.create_packet(seq, ack, syn_flag, 0, b''), (self.ip, self.port))
+        print("A connection has been established.")
 
     def establish_receiver_connection(self):
         while True:
@@ -73,6 +74,7 @@ class DRTP:
                     break
             except socket.timeout:
                 pass
+        print("A connection has been established.")
 
     def send_file(self, file_name):
         with open(file_name, 'rb') as f:
