@@ -44,6 +44,7 @@ class DRTP:
         ack = 0
         syn_flag = 1 << 3
         self.socket.sendto(self.create_packet(seq, ack, syn_flag, 0, b''), (self.ip, self.port))
+        print("A connection has been established.")
         while True:
             try:
                 data, _ = self.socket.recvfrom(1472)
@@ -58,9 +59,10 @@ class DRTP:
                     break
             except socket.timeout:
                 self.socket.sendto(self.create_packet(seq, ack, syn_flag, 0, b''), (self.ip, self.port))
-        print("A connection has been established.")
+        
 
     def establish_receiver_connection(self):
+        print("A connection has been established.")
         while True:
             try:
                 data, addr = self.socket.recvfrom(1472)
@@ -76,7 +78,7 @@ class DRTP:
                     break
             except socket.timeout:
                 pass
-        print("A connection has been established.")
+        
 
     def send_data(self, data):
         if self.reliability_method == 'stop_and_wait':
