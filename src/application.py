@@ -3,13 +3,13 @@ from DRTP import DRTP
 
 
 def server(local_ip, local_port, file_name, reliability_func):
-    drtp = DRTP(local_ip, local_port, reliability_func)
-    drtp.establish_receiver_connection()
-
     print('-' * 60)
     print(f'Server is listening on port {local_port}')
     print(f'Using reliability function: {args.reliability_function}')
     print('-' * 60 + '\n')
+    
+    drtp = DRTP(local_ip, local_port, reliability_func)
+    drtp.establish_receiver_connection()
 
     while True:
         # Receiving a file from the client
@@ -25,14 +25,16 @@ def server(local_ip, local_port, file_name, reliability_func):
 
 
 def client(remote_ip, remote_port, file_name, reliability_func):
-    # Creating DRTP instance
-    drtp = DRTP(remote_ip, remote_port, reliability_func)
-    drtp.establish_sender_connection()
-
     print('\n' + '-' * 70)
     print(f"A client connecting to server {remote_ip}, port {remote_port}")
     print(f'Using reliability function: {args.reliability_function}')
     print('-' * 70)
+    
+    # Creating DRTP instance
+    drtp = DRTP(remote_ip, remote_port, reliability_func)
+    drtp.establish_sender_connection()
+
+    
 
     while True:
         print(f"Client connected with {remote_ip}, port {remote_port}\n")
@@ -53,7 +55,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--client', action='store_true', help='Run as client')
     parser.add_argument('-I', '--remote-ip', default='127.0.0.1', help='Remote server IP address')
     parser.add_argument('-p', '--port', type=int, default=8080, help='Server port number')
-    parser.add_argument('-b', '--bind', type=str, help='Local IP address')
+    parser.add_argument('-b', '--bind', default='127.0.0.1', type=str, help='Local IP address')
     parser.add_argument('-f', '--file-name', type=str, help='File name to transfer')
     parser.add_argument('-r', '--reliability-function', choices=['stop_and_wait', 'gbn', 'sr'], default='stop_and_wait',
                         help='Reliability function to use (default: stop_and_wait)')
