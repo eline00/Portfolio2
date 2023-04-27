@@ -9,7 +9,7 @@ def server(local_ip, local_port, file_name, reliability_func):
     print('-' * 60 + '\n')
     
     drtp = DRTP(local_ip, local_port, reliability_func)
-    drtp.establish_receiver_connection()
+    drtp.establish_connection()
 
     
     # Receiving a file from the client
@@ -32,7 +32,7 @@ def client(remote_ip, remote_port, file_name, reliability_func):
     
     # Creating DRTP instance
     drtp = DRTP(remote_ip, remote_port, reliability_func)
-    drtp.establish_sender_connection()
+    drtp.establish_connection()
 
     while True:
         print(f"Client connected with {remote_ip}, port {remote_port}\n")

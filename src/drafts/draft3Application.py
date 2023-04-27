@@ -13,14 +13,13 @@ def server(args):
         gbn_server(server_drtp, args.file_name)
     elif args.reliability_func == "sr":
         sr_server(server_drtp, args.file_name)
-
-    server_drtp.fin()
-    server_drtp.close()
     
 def client(args):
     client_socket = socket(AF_INET, SOCK_DGRAM)
     client_drtp = DRTP(args.remote_ip, args.port, client_socket)
     client_drtp.syn_client()
+    print("SYN sent from the client. Waiting for SYN-ACK.")
+
 
     if args.reliability_func == "stop-and-wait":
         stop_and_wait_client(client_drtp, args.file_name)  # Fix this line
@@ -37,7 +36,7 @@ def client(args):
     while True:
         try:
             client_drtp.socket.settimeout(0.5)
-            ack_packet = client_drtp.receive_packet()
+            ack_packet, ack_addr = client_drtp.receive_packet()
             _, _, flags, _, _ = client_drtp.parse_packet(ack_packet)
             
             # Check if received packet is an ACK for the FIN packet
@@ -266,6 +265,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--file_name', type=str, help='File name to transfer')
     parser.add_argument('-r', '--reliability_func', choices=['stop-and-wait', 'gbn', 'sr'], default='stop_and_wait',
                         help='Reliability function to use (default: stop_and_wait)')
+    parser.add_argument('-w', '--window_size', default=5, type=int, help="Size of the sliding window")
 
     args = parser.parse_args()
 
