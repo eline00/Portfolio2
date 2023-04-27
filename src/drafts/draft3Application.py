@@ -1,5 +1,5 @@
 import argparse
-from dratf3DRTP import *
+from draft3DRTP import *
 
 def server(args):
     drtp = DRTP(args.bind, args.port)
