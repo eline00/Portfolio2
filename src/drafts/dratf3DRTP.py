@@ -24,12 +24,14 @@ class DRTP:
         header = pack("!IIHH", seq_num, ack_num, flags, window)
         packet = header + data
         return packet
-
+    
     def parse_packet(self, packet):
         header = packet[:12]
         data = packet[12:]
-        seq_num, ack_num, flags, window = unpack("!IIHH", header)
-        return seq_num, ack_num, flags, window, data
+        seq_num, ack_num, flags, window = unpack("!IIHH", bytes(header))
+        return seq_num, ack_num, flags, window, data if data else b''
+
+
 
     def syn_server(self):
         # Server side logic for connection establishment

@@ -1,5 +1,5 @@
 import argparse
-from DRTP import DRTP
+from dratf3DRTP import *
 
 def server(args):
     drtp = DRTP(args.bind, args.port)
@@ -98,7 +98,7 @@ def stop_and_wait_client(drtp, file):
                     
             seq_num += 1
 
-
+"""
 def gbn_server(drtp, file):
     with open(file, 'wb') as f:
         base = 0
@@ -106,7 +106,41 @@ def gbn_server(drtp, file):
             try:
                 drtp.socket.settimeout(0.5)
                 data_packet = drtp.receive_packet()
-                seq_num, _, flags, _, data = drtp.parse_packet(data_packet)
+                header, data = drtp.parse_packet(bytes(data_packet))
+
+                seq_num, _, flags, _, window = unpack("!IIHH", header)
+
+                
+                if flags & 0x01:  # Check if the FIN flag is set
+                    break
+                
+                # Send an ACK packet for the received packet
+                ack_packet = drtp.create_packet(seq_num, 0, 0x10, 0, b'')
+                drtp.send_packet(ack_packet)
+                
+                if seq_num == base:
+                    f.write(data)
+                    base += 1
+            except Exception:
+                # If timeout occurs, resend all unacknowledged packets in the window
+                for i in range(base, seq_num):
+                    packet = drtp.create_packet(i, 0, 0, 0, b'')
+                    drtp.send_packet(packet)
+            
+"""
+
+def gbn_server(drtp, file):
+    with open(file, 'wb') as f:
+        base = 0
+        seq_num = 0  # Initialize seq_num before the while loop
+        while True:
+            try:
+                drtp.socket.settimeout(0.5)
+                data_packet = drtp.receive_packet()
+                header, data = drtp.parse_packet(bytes(data_packet))
+
+                seq_num, _, flags, _, window = unpack("!IIHH", header)
+
                 
                 if flags & 0x01:  # Check if the FIN flag is set
                     break
@@ -123,7 +157,7 @@ def gbn_server(drtp, file):
                 for i in range(base, seq_num):
                     packet = drtp.create_packet(i, 0, 0, 0, b'')
                     drtp.send_packet(packet)
-                    
+
 def gbn_client(drtp, file):
     with open(file, 'rb') as f:
         base = 0
@@ -169,7 +203,9 @@ def sr_server(drtp, file):
             try:
                 drtp.socket.settimeout(0.5)
                 data_packet = drtp.receive_packet()
-                seq_num, _, flags, _, data = drtp.parse_packet(data_packet)
+                header, data = drtp.parse_packet(data_packet)
+                seq_num, _, flags, _, window = unpack("!IIHH", header)
+
                 
                 if flags & 0x01:  # Check if the FIN flag is set
                     break
@@ -183,9 +219,13 @@ def sr_server(drtp, file):
                     f.write(packets_in_window[base])
                     packets_in_window.pop(base)
                     base += 1
-            except socket.timeout:
-                # If timeout occurs, resend only unacknowledged packets in the window
-                print(f"Timeout occurred. Resending packet with sequence number: {seq_num}")
+
+            except Exception:
+    # If timeout occurs, resend all unacknowledged packets in the window
+                for i in range(base, seq_num):
+                    packet = drtp.create_packet(i, 0, 0, 0, b'')
+                    drtp.send_packet(packet)
+
 
 def sr_client(drtp, file):
     with open(file, 'rb') as f:
