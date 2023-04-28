@@ -263,7 +263,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port', type=int, default=8080, help='Server port number')
     parser.add_argument('-b', '--bind', default='127.0.0.1', type=str, help='Local IP address')
     parser.add_argument('-f', '--file_name', type=str, help='File name to transfer')
-    parser.add_argument('-r', '--reliability_func', choices=['stop-and-wait', 'gbn', 'sr'], default='stop_and_wait',
+    parser.add_argument('-r', '--reliability_func', choices=['stop-and-wait', 'gbn', 'sr'], default='stop-and-wait',
                         help='Reliability function to use (default: stop_and_wait)')
     parser.add_argument('-w', '--window_size', default=5, type=int, help="Size of the sliding window")
 
