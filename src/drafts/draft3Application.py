@@ -195,7 +195,7 @@ def sr_server(drtp, file):
                 drtp.socket.settimeout(0.5)
                 data_packet, data_addr = drtp.receive_packet()
                 _, _, _, _, data = drtp.parse_packet(data_packet)
-                seq_num, _, flags, window = unpack("!IIHH", header)
+                seq_num, _, flags, window = unpack("!IIHH", data_packet[:12])
 
                 
                 if flags & 0x01:  # Check if the FIN flag is set
