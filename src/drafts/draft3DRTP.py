@@ -1,4 +1,4 @@
-from socket import *
+import socket
 from struct import pack, unpack
 
 class DRTP:
@@ -61,7 +61,7 @@ class DRTP:
 					# Received SYN-ACK packet from the server
 					self.send_packet(self.create_packet(seq_num+1, ack_num, self.ACK, window, b''), (self.ip, self.port))
 					break
-			except socket.timeout:
+			except socket.timeout():
 				print("Timeout occurred, resending SYN packet") # Add this print statement
 				# Resend the SYN packet if the timeout occurs
 				self.send_packet(syn_packet, (self.ip, self.port))

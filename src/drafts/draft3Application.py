@@ -2,7 +2,7 @@ import argparse
 from draft3DRTP import *
 
 def server(args):
-    server_socket = socket(AF_INET, SOCK_DGRAM)
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind(('', args.port))
     server_drtp = DRTP(args.bind, args.port, server_socket)
     server_drtp.syn_server()
@@ -15,7 +15,7 @@ def server(args):
         sr_server(server_drtp, args.file_name)
     
 def client(args):
-    client_socket = socket(AF_INET, SOCK_DGRAM)
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_drtp = DRTP(args.remote_ip, args.port, client_socket)
     client_drtp.syn_client()
     print("SYN sent from the client. Waiting for SYN-ACK.")
@@ -39,6 +39,11 @@ def client(args):
                 break
         except socket.timeout:
             continue
+        
+    # Send a packet with the FIN flag set after the file data has been sent
+    print("Sending FIN packet.")  # Debug print
+    fin_packet = client_drtp.create_packet(seq_num, 0, 0x01, 0, b'')
+    drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
 
     client_drtp.close()
 
@@ -52,11 +57,8 @@ def stop_and_wait_server(drtp, file):
                 data_packet, data_addr = drtp.receive_packet()
                 _, _, flags, _, data = drtp.parse_packet(data_packet)
                 
-                print("Packet received.")  # Debug print
-
-                if flags & 0x01:  # Check if the FIN flag is set
-                    print("FIN flag set. Exiting loop.")  # Debug print
-                    break
+                print("Received packet from the client:", data_packet)
+                print("Checking for FIN flag...")
                 
                 print("Received data:", data)  # Debug print
                 
@@ -77,7 +79,6 @@ def stop_and_wait_client(drtp, file):
         seq_num = 0
         while True:
             data = f.read(1460)
-            print("Data: " + str(data))
             if not data:
                 break
             
@@ -88,6 +89,7 @@ def stop_and_wait_client(drtp, file):
             ack_received = False
             while not ack_received:
                 drtp.send_packet(packet, (drtp.ip, drtp.port))
+                print("Data packet sent to the server:", packet)
                 
                 try:
                     drtp.socket.settimeout(0.5)
@@ -102,12 +104,8 @@ def stop_and_wait_client(drtp, file):
                     # If timeout occurs, the code will go back to the beginning of the loop and resend the packet 
                     print("Timeout occurred. Resending packet with sequence number:", seq_num)
                     
+                    
             seq_num += 1
-        
-        # Send a packet with the FIN flag set after the file data has been sent
-        print("Sending FIN packet.")  # Debug print
-        fin_packet = drtp.create_packet(seq_num, 0, 0x01, 0, b'')
-        drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
 
 
 def gbn_server(drtp, file):
