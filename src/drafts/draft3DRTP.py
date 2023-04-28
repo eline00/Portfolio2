@@ -66,27 +66,6 @@ class DRTP:
 				print("Timeout occurred, resending SYN packet") # Add this print statement
 				# Resend the SYN packet if the timeout occurs
 				self.send_packet(syn_packet)
-
-
-
-	def fin(self):
-		fin_flag = 0x01
-		fin_packet = self.create_packet(0, 0, fin_flag, 64, b'')
-		self.send_packet(fin_packet)
-
-		while True:
-			try:
-				self.socket.settimeout(1)  # Set a timeout of 1 second
-				ack_packet, _ = self.receive_packet()
-				_, _, flags, _, _ = self.parse_packet(ack_packet)
-				if flags != 0x10:  # ACK flag is set
-					break
-			except socket.timeout:
-				# Resend the FIN packet if the timeout occurs
-				self.send_packet(fin_packet)
-		else:
-			raise Exception("FIN-ACK not received")
-
-		
+	
 	def close(self):
 		self.socket.close()
