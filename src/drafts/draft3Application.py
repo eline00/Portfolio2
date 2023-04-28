@@ -32,7 +32,7 @@ def client(args):
         try:
             client_drtp.socket.settimeout(0.5)
             ack_packet, ack_addr = client_drtp.receive_packet()
-            _, _, flags, _, _ = client_drtp.parse_packet(ack_packet)
+            seq_num, _, flags, _, _ = client_drtp.parse_packet(ack_packet)
             
             # Check if received packet is an ACK for the FIN packet
             if flags & 0x10:
@@ -43,7 +43,7 @@ def client(args):
     # Send a packet with the FIN flag set after the file data has been sent
     print("Sending FIN packet.")  # Debug print
     fin_packet = client_drtp.create_packet(seq_num, 0, 0x01, 0, b'')
-    drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
+    client_drtp.send_packet(fin_packet, (args.remote_ip, args.port))
 
     client_drtp.close()
 
@@ -59,7 +59,8 @@ def stop_and_wait_server(drtp, file):
                 
                 print("Received packet from the client:", data_packet)
                 print("Checking for FIN flag...")
-                
+            
+        
                 print("Received data:", data)  # Debug print
                 
                 # Send an ACK packet for the received packet
