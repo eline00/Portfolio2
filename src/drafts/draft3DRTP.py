@@ -11,8 +11,7 @@ class DRTP:
 		self.SYN = 1 << 1
 		self.FIN = 1 << 2
 
-	def send_packet(self, packet):
-		addr = (self.ip, self.port)
+	def send_packet(self, packet, addr):
 		self.socket.sendto(packet, addr)
 		print(f"Packet sent to {addr}: {packet}")  # Add this print statement
 		
@@ -41,7 +40,7 @@ class DRTP:
 				print("Received SYN packet from the client") # Add this print statement
 				# Received SYN packet from the client
 				syn_ack_packet = self.create_packet(seq_num+1, ack_num+1, self.SYN | self.ACK, window, b'')
-				self.send_packet(syn_ack_packet)
+				self.send_packet(syn_ack_packet, addr)
 				print(f"SYN-ACK packet sent to {addr}: {syn_ack_packet}")  # Add this print statement
 				break
 
@@ -50,7 +49,7 @@ class DRTP:
 		# Client side logic for connection establishment
 		syn_seq_num = 0  # You can use a random sequence number or a fixed one like this
 		syn_packet = self.create_packet(syn_seq_num, 0, self.SYN, 64, b'')
-		self.send_packet(syn_packet)
+		self.send_packet(syn_packet, (self.ip, self.port))
 		
 		while True:
 			try:
@@ -60,32 +59,12 @@ class DRTP:
 				if flags & self.SYN and flags & self.ACK and ack_num == syn_seq_num + 1:
 					print("Received SYN-ACK packet from the server") # Add this print statement
 					# Received SYN-ACK packet from the server
-					self.send_packet(self.create_packet(seq_num+1, ack_num, self.ACK, window, b''))
+					self.send_packet(self.create_packet(seq_num+1, ack_num, self.ACK, window, b''), (self.ip, self.port))
 					break
 			except socket.timeout:
 				print("Timeout occurred, resending SYN packet") # Add this print statement
 				# Resend the SYN packet if the timeout occurs
-				self.send_packet(syn_packet)
-
-
-
-	def fin(self):
-		fin_flag = 0x01
-		fin_packet = self.create_packet(0, 0, fin_flag, 64, b'')
-		self.send_packet(fin_packet)
-
-		while True:
-			try:
-				self.socket.settimeout(1)  # Set a timeout of 1 second
-				ack_packet, _ = self.receive_packet()
-				_, _, flags, _, _ = self.parse_packet(ack_packet)
-				if flags != 0x10:  # ACK flag is set
-					break
-			except socket.timeout:
-				# Resend the FIN packet if the timeout occurs
-				self.send_packet(fin_packet)
-		else:
-			raise Exception("FIN-ACK not received")
+				self.send_packet(syn_packet, (self.ip, self.port))
 
 		
 	def close(self):
