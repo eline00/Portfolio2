@@ -60,13 +60,13 @@ def stop_and_wait_server(drtp, file):
                 data_packet, data_addr = drtp.receive_packet()
                 _, _, flags, _, data = drtp.parse_packet(data_packet)
 
-                print("Received packet from the client:", data_packet)
-                print("Checking for FIN flag...")
+                if flags & drtp.FIN:  # Add this condition to check for the FIN flag
+                    break
 
                 print("Received data:", data)  # Debug print
 
                 # Send an ACK packet for the received packet
-                ack_packet = drtp.create_packet(seq_num, 0, 0x10, 0, b'')
+                ack_packet = drtp.create_packet(seq_num, 0, drtp.ACK, 0, b'')
                 drtp.send_packet(ack_packet, data_addr)
 
                 f.write(data)
@@ -100,7 +100,7 @@ def stop_and_wait_client(drtp, file):
                     _, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)
 
                     # Check if received packet is an ACK for the sent packet
-                    if flags & 0x10 and ack_num == seq_num:
+                    if flags & drtp.ACK and ack_num == seq_num:  # Change this line
                         ack_received = True
 
                 except socket.timeout:
