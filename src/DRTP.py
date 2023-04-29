@@ -67,7 +67,7 @@ class DRTP:
                     print("Received SYN-ACK packet from the server")  # Add this print statement
                     # Received SYN-ACK packet from the server
                     self.send_packet(self.create_packet(seq_num + 1, ack_num, self.ACK, window, b''),
-                                     (self.ip, self.port))
+                                     (packet, (self.ip, self.port)))
                     break
             except socket.timeout:
                 print("Timeout occurred, resending SYN packet")  # Add this print statement

@@ -26,7 +26,7 @@ def server(args):
 
 
 def client(args):
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client_socket = socket.socket(  socket.AF_INET, socket.SOCK_DGRAM)
     client_drtp = DRTP(args.remote_ip, args.port, client_socket)
     client_drtp.syn_client()
     print("SYN sent from the client. Waiting for SYN-ACK.")
