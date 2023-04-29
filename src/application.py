@@ -8,6 +8,15 @@ def server(args):
     server_drtp = DRTP(args.bind, args.port, server_socket)
     server_drtp.syn_server()
 
+    # File receiving code
+    with open(args.file_name, 'wb') as f:
+        while True:
+            packet, addr = server_drtp.receive_packet()
+            if not packet:
+                break
+            _, _, _, _, data = server_drtp.parse_packet(packet)
+            f.write(data)
+
     if args.reliability_func == "stop-and-wait":
         stop_and_wait_server(server_drtp, args.file_name)
     elif args.reliability_func == "gbn":
@@ -21,6 +30,14 @@ def client(args):
     client_drtp = DRTP(args.remote_ip, args.port, client_socket)
     client_drtp.syn_client()
     print("SYN sent from the client. Waiting for SYN-ACK.")
+
+    # File sending code
+    with open(args.file_name, 'rb') as f:
+        data = f.read(1460)
+        while data:
+            packet = client_drtp.create_packet(0, 0, 0, 0, data)
+            client_drtp.send_packet(packet, client_drtp.ip, client_drtp.port)
+            data = f.read(1460)
 
     if args.reliability_func == "stop-and-wait":
         stop_and_wait_client(client_drtp, args.file_name)  # Fix this line

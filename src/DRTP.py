@@ -31,6 +31,7 @@ class DRTP:
         return packet
 
     def parse_packet(self, packet):
+        print(f"Packet before parse_packet: {packet}")
         header = packet[:12]
         data = packet[12:]
         seq_num, ack_num, flags, window = unpack("!IIHH", header)
