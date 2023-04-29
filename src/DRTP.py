@@ -1,255 +1,72 @@
 import socket
-from struct import *
-import time
-import threading
+from struct import pack, unpack
 
 
 class DRTP:
-    HEADER_FORMAT = '!IIHH'     #4+4+2+2=12 bytes
-    HEADER_SIZE = calcsize(HEADER_FORMAT)
-
-    def __init__(self, ip, port, reliability_method, timeout=0.5, window_size=5):
+    def __init__(self, ip, port, socket):
+        # Initialize DRTP instance variables
         self.ip = ip
         self.port = port
-        self.reliability_method = reliability_method
-        self.timeout = timeout
-        self.window_size = window_size
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.settimeout(self.timeout)
+        self.socket = socket
+        self.ACK = 1 << 0
+        self.SYN = 1 << 1
+        self.FIN = 1 << 2
 
-    def create_packet(self, seq, ack, flags, win, data):
-        header = pack(self.HEADER_FORMAT, seq, ack, flags, win)
-        return header + data
+    def send_packet(self, packet, addr):
+        self.socket.sendto(packet, addr)
+        print(f"Packet sent to {addr}: {packet}")  # Add this print statement
 
-    def parse_header(self, header):
-        return unpack(self.HEADER_FORMAT, header)
+    def receive_packet(self):
+        packet, addr = self.socket.recvfrom(1472)
+        return packet, addr
 
-    def parse_flags(self, flags):
-        syn = flags & (1 << 3)
-        ack = flags & (1 << 2)
-        fin = flags & (1 << 1)
-        return syn, ack, fin
+    def create_packet(self, seq_num, ack_num, flags, window, data):
+        header = pack("!IIHH", seq_num, ack_num, flags, window)
+        packet = header + data
+        return packet
 
-    def establish_connection(self):
-        # Three-way handshake implementation
-        # Sender
-        if self.reliability_method == 'send':
-            self.establish_sender_connection()
-        elif self.reliability_method == 'recv':
-            self.establish_receiver_connection()
+    def parse_packet(self, packet):
+        header = packet[:12]
+        data = packet[12:]
+        seq_num, ack_num, flags, window = unpack("!IIHH", header)
+        return seq_num, ack_num, flags, window, data if data else b''
 
-    # Establishes the three-way handshake for connection establishment
-    def establish_sender_connection(self):
-        seq = 0
-        ack = 0
-        syn_flag = 1 << 3
-        self.socket.sendto(self.create_packet(seq, ack, syn_flag, 0, b''), (self.ip, self.port))
-        print("A connection has been established.")
+    def syn_server(self):
+        # Server side logic for connection establishment
+        while True:
+            packet, addr = self.receive_packet()
+            seq_num, ack_num, flags, window, _ = self.parse_packet(packet)
+            if flags & self.SYN:
+                print("Received SYN packet from the client")  # Add this print statement
+                # Received SYN packet from the client
+                syn_ack_packet = self.create_packet(seq_num + 1, ack_num + 1, self.SYN | self.ACK, window, b'')
+                self.send_packet(syn_ack_packet, addr)
+                print(f"SYN-ACK packet sent to {addr}: {syn_ack_packet}")  # Add this print statement
+                break
+
+    def syn_client(self):
+        # Client side logic for connection establishment
+        syn_seq_num = 0  # You can use a random sequence number or a fixed one like this
+        syn_packet = self.create_packet(syn_seq_num, 0, self.SYN, 64, b'')
+        self.send_packet(syn_packet, (self.ip, self.port))
+
+        self.socket.settimeout(5)
+
         while True:
             try:
-                data, _ = self.socket.recvfrom(1472)
-                header = data[:self.HEADER_SIZE]
-                seq, ack, flags, win = self.parse_header(header)
-                syn, ack_flag, fin = self.parse_flags(flags)
-                if syn and ack_flag:
-                    seq = 0
-                    ack = 1
-                    ack_flag = 1 << 2
-                    self.socket.sendto(self.create_packet(seq, ack, ack_flag, 0, b''), (self.ip, self.port))
+                packet, addr = self.receive_packet()
+                print("Received SYN-ACK packet from the server.")
+                seq_num, ack_num, flags, window, _ = self.parse_packet(packet)
+                if flags & self.SYN and flags & self.ACK and ack_num == syn_seq_num + 1:
+                    print("Received SYN-ACK packet from the server")  # Add this print statement
+                    # Received SYN-ACK packet from the server
+                    self.send_packet(self.create_packet(seq_num + 1, ack_num, self.ACK, window, b''),
+                                     (self.ip, self.port))
                     break
-            except socket.timeout:
-                self.socket.sendto(self.create_packet(seq, ack, syn_flag, 0, b''), (self.ip, self.port))
-        
+            except socket.timeout():
+                print("Timeout occurred, resending SYN packet")  # Add this print statement
+                # Resend the SYN packet if the timeout occurs
+                self.send_packet(syn_packet, (self.ip, self.port))
 
-    def establish_receiver_connection(self):
-        print("A connection has been established.")
-        while True:
-            try:
-                data, addr = self.socket.recvfrom(1472)
-                header = data[:self.HEADER_SIZE]
-                seq, ack, flags, win = self.parse_header(header)
-                syn, ack_flag, fin = self.parse_flags(flags)
-                if syn:
-                    seq = 0
-                    ack = 1
-                    syn_flag = 1 << 3
-                    ack_flag = 1 << 2
-                    self.socket.sendto(self.create_packet(seq, ack, syn_flag | ack_flag, 0, b''), addr)
-                    break
-            except socket.timeout:
-                pass
-            
-    def send_file(self, file_name):
-        with open(file_name, 'rb') as f:
-            file_data = f.read()
-        self.send_data(file_data)
-        
-    def send_data(self, data):
-        if self.reliability_method == 'stop_and_wait':
-            self.stop_and_wait(data)
-        elif self.reliability_method == 'gbn':
-            self.gbn(data)
-        elif self.reliability_method == 'sr':
-            self.sr(data)
-
-    def receive_data(self, file_name):
-        if self.reliability_method == 'stop_and_wait':
-            return self.stop_and_wait_recv(file_name)
-        elif self.reliability_method == 'gbn':
-            return self.gbn_recv(file_name)
-        elif self.reliability_method == 'sr':
-            return self.sr_recv(file_name)
-
-    def close_connection(self):
+    def close(self):
         self.socket.close()
-
-    def close_connection(self):
-        self.socket.close()
-
-    def stop_and_wait(self, data):
-        seq = 0
-        data_idx = 0
-        while data_idx < len(data):
-            chunk = data[data_idx:data_idx + 1472 - self.HEADER_SIZE]
-            self.socket.sendto(self.create_packet(seq, 0, 0, 0, chunk), (self.ip, self.port))
-            try:
-                _, addr = self.socket.recvfrom(1472)
-            except socket.timeout:
-                continue
-            data_idx += len(chunk)
-            seq = 1 - seq
-
-    def stop_and_wait_recv(self, file_name):
-        seq = 0
-        with open(file_name, 'wb') as f:
-            while True:
-                try:
-                    data, addr = self.socket.recvfrom(1472)
-                    header = data[:self.HEADER_SIZE]
-                    r_seq, _, _, _ = self.parse_header(header)
-                    if r_seq == seq:
-                        f.write(data[self.HEADER_SIZE:])
-                        self.socket.sendto(self.create_packet(seq, 0, 0, 0, b''), addr)
-                        seq = 1 - seq
-                except socket.timeout:
-                    break
-
-    def gbn(self, data):
-        base = 0
-        next_seq = 0
-        unacknowledged_packets = {}
-        send_thread = threading.Thread(target=self.gbn_send, args=(data, unacknowledged_packets))
-        send_thread.start()
-        while base < len(data):
-            try:
-                _, addr = self.socket.recvfrom(1472)
-                header = data[:self.HEADER_SIZE]
-                _, ack, _, _ = self.parse_header(header)
-                if ack >= base:
-                    base = ack + 1
-            except socket.timeout:
-                base = self.gbn_resend(base, unacknowledged_packets)
-
-    def gbn_send(self, data, unacknowledged_packets):
-        seq = 0
-        data_idx = 0
-        while data_idx < len(data):
-            chunk = data[data_idx:data_idx + 1472 - self.HEADER_SIZE]
-            packet = self.create_packet(seq, 0, 0, 0, chunk)
-            self.socket.sendto(packet, (self.ip, self.port))
-            unacknowledged_packets[seq] = packet
-            seq = (seq + 1) % self.window_size
-            data_idx += len(chunk)
-
-    def gbn_resend(self, base, unacknowledged_packets):
-        for seq in range(base, base + self.window_size):
-            if seq in unacknowledged_packets:
-                self.socket.sendto(unacknowledged_packets[seq], (self.ip, self.port))
-        return base
-
-    def gbn_recv(self, file_name):
-        seq = 0
-        with open(file_name, 'wb') as f:
-            while True:
-                try:
-                    data, addr = self.socket.recvfrom(1472)
-                    header = data[:self.HEADER_SIZE]
-                    r_seq, _, _, _ = self.parse_header(header)
-                    if r_seq == seq:
-                        f.write(data[self.HEADER_SIZE:])
-                        seq = (seq + 1) % self.window_size
-                    self.socket.sendto(self.create_packet(0, seq, 0, 0, b''), addr)
-                except socket.timeout:
-                    break
-
-    def sr(self, data):
-        # Your selective repeat implementation
-        pass
-
-    def sr(self, data):
-        base = 0
-        next_seq = 0
-        unacknowledged_packets = {}
-        lock = threading.Lock()
-        send_thread = threading.Thread(target=self.sr_send, args=(data, unacknowledged_packets, lock))
-        send_thread.start()
-
-        while base < len(data):
-            try:
-                _, addr = self.socket.recvfrom(1472)
-                header = data[:self.HEADER_SIZE]
-                _, ack, _, _ = self.parse_header(header)
-
-                with lock:
-                    if ack in unacknowledged_packets:
-                        del unacknowledged_packets[ack]
-                        if ack == base:
-                            base += 1
-                            while base in unacknowledged_packets:
-                                del unacknowledged_packets[base]
-                                base += 1
-            except socket.timeout:
-                self.sr_resend(unacknowledged_packets, lock)
-
-    def sr_send(self, data, unacknowledged_packets, lock):
-        seq = 0
-        data_idx = 0
-        while data_idx < len(data):
-            chunk = data[data_idx:data_idx + 1472 - self.HEADER_SIZE]
-            packet = self.create_packet(seq, 0, 0, 0, chunk)
-            self.socket.sendto(packet, (self.ip, self.port))
-            with lock:
-                unacknowledged_packets[seq] = packet
-            seq = (seq + 1) % self.window_size
-            data_idx += len(chunk)
-
-    def sr_resend(self, unacknowledged_packets, lock):
-        with lock:
-            for seq, packet in unacknowledged_packets.items():
-                self.socket.sendto(packet, (self.ip, self.port))
-
-    def sr_recv(self, file_name):
-        buffer = {}
-        expected_seq = 0
-
-        with open(file_name, 'wb') as f:
-            while True:
-                try:
-                    data, addr = self.socket.recvfrom(1472)
-                    header = data[:self.HEADER_SIZE]
-                    r_seq, _, _, _ = self.parse_header(header)
-
-                    if r_seq == expected_seq:
-                        f.write(data[self.HEADER_SIZE:])
-                        expected_seq = (expected_seq + 1) % self.window_size
-                        while expected_seq in buffer:
-                            f.write(buffer[expected_seq])
-                            del buffer[expected_seq]
-                            expected_seq = (expected_seq + 1) % self.window_size
-                    elif r_seq not in buffer:
-                        buffer[r_seq] = data[self.HEADER_SIZE:]
-
-                    self.socket.sendto(self.create_packet(0, r_seq, 0, 0, b''), addr)
-
-                except socket.timeout:
-                    break
