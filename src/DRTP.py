@@ -13,7 +13,7 @@ class DRTP:
         self.FIN = 1 << 2
 
     def send_packet(self, packet, ip, port):
-        self.socket.sendto(packet, (ip, port))
+        self.socket.sendto(packet, self.ip, self.port)
         print(f"Packet sent to {ip}:{port}: {packet}")
 
     def receive_packet(self):
