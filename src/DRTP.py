@@ -62,6 +62,15 @@ class DRTP:
             try:
                 packet, addr = self.receive_packet()
                 print("Received SYN-ACK packet from the server.")
+
+                packet = None
+                while packet is None:
+                    try:
+                        packet, addr = self.socket.recvfrom(1024)
+                    except socket.timeout:
+                        print("Timeout occurred on the server. Retrying...")
+                        continue
+
                 seq_num, ack_num, flags, window, _ = self.parse_packet(packet)
                 if flags & self.SYN and flags & self.ACK and ack_num == syn_seq_num + 1:
                     print("Received SYN-ACK packet from the server")  # Add this print statement

@@ -138,8 +138,7 @@ def stop_and_wait_client(drtp, file):
                 except socket.timeout:
                     # If timeout occurs, the code will go back to the beginning of the loop and resend the packet 
                     print("Timeout occurred. Resending packet with sequence number:", seq_num)
-                    
-                    
+
             seq_num += 1
 
 
