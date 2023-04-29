@@ -13,7 +13,7 @@ class DRTP:
         self.FIN = 1 << 2
 
     def send_packet(self, packet, ip, port):
-        self.socket.sendto(packet, self.ip, self.port)
+        self.socket.sendto(packet, (self.ip, self.port))
         print(f"Packet sent to {ip}:{port}: {packet}")
 
     def receive_packet(self):
@@ -53,7 +53,7 @@ class DRTP:
         # Client side logic for connection establishment
         syn_seq_num = 0  # You can use a random sequence number or a fixed one like this
         syn_packet = self.create_packet(syn_seq_num, 0, self.SYN, 64, b'')
-        self.send_packet(syn_packet, (self.ip, self.port))
+        self.send_packet(syn_packet, self.ip, self.port)
 
         self.socket.settimeout(5)
 
@@ -71,7 +71,7 @@ class DRTP:
             except socket.timeout():
                 print("Timeout occurred, resending SYN packet")  # Add this print statement
                 # Resend the SYN packet if the timeout occurs
-                self.send_packet(syn_packet, (self.ip, self.port))
+                self.send_packet(syn_packet, self.ip, self.port)
 
     def close(self):
         self.socket.close()

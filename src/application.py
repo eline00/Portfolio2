@@ -40,6 +40,7 @@ def client(args):
             if flags & 0x10:
                 break
         except socket.timeout:
+            print("Timeout occurred, resending SYN packet")
             continue
 
     # Send a packet with the FIN flag set after the file data has been sent
