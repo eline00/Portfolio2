@@ -12,13 +12,18 @@ class DRTP:
         self.SYN = 1 << 1
         self.FIN = 1 << 2
 
-    def send_packet(self, packet, addr):
-        self.socket.sendto(packet, addr)
-        print(f"Packet sent to {addr}: {packet}")  # Add this print statement
+    def send_packet(self, packet, ip, port):
+        self.socket.sendto(packet, (ip, port))
+        print(f"Packet sent to {ip}:{port}: {packet}")
 
     def receive_packet(self):
-        packet, addr = self.socket.recvfrom(1472)
-        return packet, addr
+        try:
+            packet, addr = self.socket.recvfrom(1472)
+            print(f"Received packet from {addr}: {packet}")
+            return packet, addr
+        except socket.timeout:
+            print("Timeout occurred on the server.")
+            return None, None
 
     def create_packet(self, seq_num, ack_num, flags, window, data):
         header = pack("!IIHH", seq_num, ack_num, flags, window)
