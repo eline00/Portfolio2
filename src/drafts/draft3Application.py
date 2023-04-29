@@ -47,7 +47,7 @@ def client(args):
 
     client_drtp.close()
 
-def stop_and_wait_server(drtp, file):
+"""def stop_and_wait_server(drtp, file):
     print("Server started.")  # Debug print
     with open(file, 'wb') as f:
         seq_num = 0
@@ -72,7 +72,41 @@ def stop_and_wait_server(drtp, file):
             except socket.timeout:
                 print("Timeout occurred on the server.")  # Debug print
                 continue
+                """
 
+def stop_and_wait_server(drtp, file):
+    print("Server started.")  # Debug print
+    with open(file, 'wb') as f:
+        seq_num = 0
+        received_fin = False
+        while True:
+            try:
+                drtp.socket.settimeout(0.5)
+                data_packet, data_addr = drtp.receive_packet()
+                _, _, flags, _, data = drtp.parse_packet(data_packet)
+                
+                print("Received packet from the client:", data_packet)
+                print("Checking for FIN flag...")
+
+                if flags & 0x01:
+                    print("FIN flag received.")
+                    received_fin = True
+
+                print("Received data:", data)  # Debug print
+                
+                # Send an ACK packet for the received packet
+                ack_packet = drtp.create_packet(seq_num, 0, 0x10, 0, b'')
+                drtp.send_packet(ack_packet, data_addr)
+                
+                f.write(data)
+                seq_num += 1
+            except socket.timeout:
+                if received_fin:
+                    print("Timeout occurred after receiving FIN flag. Closing the server.")
+                    break
+                else:
+                    print("Timeout occurred on the server.")  # Debug print
+                    continue
 
 def stop_and_wait_client(drtp, file):
     print("Stop-and-wait client started.")  # Add this line
