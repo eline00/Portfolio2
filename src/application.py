@@ -1,5 +1,5 @@
 import argparse
-from draft3DRTP import *
+from DRTP import *
 
 def server(args):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
