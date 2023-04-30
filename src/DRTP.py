@@ -14,12 +14,11 @@ class DRTP:
 
     def send_packet(self, packet, ip, port):
         self.socket.sendto(packet, (self.ip, self.port))
-        print(f"Packet sent to {ip}:{port}: {packet}")
 
     def receive_packet(self):
         try:
             packet, addr = self.socket.recvfrom(1472)
-            print(f"Received packet from {addr}: {packet}")
+            print(f"Received packet from {addr}")
             return packet, addr
         except socket.timeout:
             print("Timeout occurred on the server.")
@@ -31,7 +30,6 @@ class DRTP:
         return packet
 
     def parse_packet(self, packet):
-        print(f"Packet before parse_packet: {packet}")
         header = packet[:12]
         data = packet[12:]
         seq_num, ack_num, flags, window = unpack("!IIHH", header)
@@ -47,7 +45,7 @@ class DRTP:
                 # Received SYN packet from the client
                 syn_ack_packet = self.create_packet(seq_num + 1, ack_num + 1, self.SYN | self.ACK, window, b'')
                 self.send_packet(syn_ack_packet, addr[0], addr[1])
-                print(f"SYN-ACK packet sent to {addr}: {syn_ack_packet}")  # Add this print statement
+                print(f"SYN-ACK packet sent to {addr}")  # Add this print statement
                 break
 
     def syn_client(self):
@@ -61,7 +59,6 @@ class DRTP:
         while True:
             try:
                 packet, addr = self.receive_packet()
-                print("Received SYN-ACK packet from the server.")
                 seq_num, ack_num, flags, window, _ = self.parse_packet(packet)
                 if flags & self.SYN and flags & self.ACK and ack_num == syn_seq_num + 1:
                     print("Received SYN-ACK packet from the server")  # Add this print statement
@@ -72,7 +69,7 @@ class DRTP:
             except socket.timeout:
                 print("Timeout occurred, resending SYN packet")  # Add this print statement
                 # Resend the SYN packet if the timeout occurs
-                self.send_packet(syn_packet, self.ip, self.port)
+                self.send_packet(syn_packet, (self.ip, self.port))
 
     def close(self):
         self.socket.close()

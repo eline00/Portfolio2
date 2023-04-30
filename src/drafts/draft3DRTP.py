@@ -13,9 +13,7 @@ class DRTP:
 
 	def send_packet(self, packet, addr):
 		self.socket.sendto(packet, addr)
-		print(f"Packet sent to {addr}: {packet}")  # Add this print statement
 		
-
 	def receive_packet(self):
 		packet, addr = self.socket.recvfrom(1472)
 		return packet, addr
@@ -41,7 +39,7 @@ class DRTP:
 				# Received SYN packet from the client
 				syn_ack_packet = self.create_packet(seq_num+1, ack_num+1, self.SYN | self.ACK, window, b'')
 				self.send_packet(syn_ack_packet, addr)
-				print(f"SYN-ACK packet sent to {addr}: {syn_ack_packet}")  # Add this print statement
+				print(f"SYN-ACK packet sent to {addr}")  # Add this print statement
 				break
 
 
@@ -56,7 +54,6 @@ class DRTP:
 		while True:
 			try:
 				packet, addr = self.receive_packet()
-				print("Received SYN-ACK packet from the server.")
 				seq_num, ack_num, flags, window, _ = self.parse_packet(packet)
 				if flags & self.SYN and flags & self.ACK and ack_num == syn_seq_num + 1:
 					print("Received SYN-ACK packet from the server") # Add this print statement
