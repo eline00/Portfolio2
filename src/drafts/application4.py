@@ -6,6 +6,7 @@ def server(args):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind(('', args.port))
     server_drtp = DRTP(args.bind, args.port, server_socket)
+    server_drtp.syn_server()
 
     print("-----------------------------------------------")
     print("A server is listening on port", args.port)  # Communicates that the server is ready to recieve transmition
@@ -16,9 +17,9 @@ def server(args):
     if args.reliability_func == "stop-and-wait":
         stop_and_wait_server(server_drtp, args.file_name)
     elif args.reliability_func == "gbn":
-        gbn_server(server_drtp, args.file_name)
+        gbn_server(server_drtp, args.file_name, args.window_size)
     elif args.reliability_func == "sr":
-        sr_server(server_drtp, args.file_name)
+        sr_server(server_drtp, args.file_name, args.window_size)
 
 
 def client(args):
@@ -72,6 +73,8 @@ def stop_and_wait_client(drtp, file):
     print("Stop-and-wait client started.")
     with open(file, 'rb') as f:
         seq = 0
+        skip_ack = False
+        ack_received_counter = 0
         while True:
             data = f.read(1460)
             if not data:
@@ -90,11 +93,14 @@ def stop_and_wait_client(drtp, file):
                     ack_packet, ack_addr = drtp.receive_packet()
                     seq_num, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)
 
-                    if flags & 0x10:
+                    if flags & 0x10 and not skip_ack:
                         ack_received = True
                         print("ACK received")
-
-
+                        ack_received_counter += 1
+                        skip_ack = False if args.ack_skip == 0 else (ack_received_counter % args.ack_skip != 0)
+                    elif skip_ack:
+                        skip_ack = False if args.ack_skip == 0 else (ack_received_counter % args.ack_skip != 0)
+                        raise socket.timeout
                 except socket.timeout:
                     print("Timeout occurred. Resending packet with sequence number:", seq_num)
 
@@ -160,6 +166,11 @@ def gbn_client(drtp, file, window_size):
                 if flags & 0x10:
                     for seq_num in range(base, ack_num):
                         packets_in_window.pop(seq_num)
+                        if args.ack_skip and seq_num == base:
+                            skip_ack = not skip_ack
+                            if skip_ack:
+                                continue
+                        print(f"Received ACK for packet with sequence number: {seq_num}")
                     base = ack_num
             except socket.timeout:
                 for seq_num, packet in packets_in_window.items():
@@ -230,7 +241,13 @@ def sr_client(drtp, file, window_size):
                 if flags & 0x10:
                     for seq_num in range(base, ack_num):
                         packets_in_window.pop(seq_num)
+                        if args.ack_skip and seq_num == base:
+                            skip_ack = not skip_ack
+                            if skip_ack:
+                                continue
+                        print(f"Received ACK for packet with sequence number: {seq_num}")
                     base = ack_num
+
             except socket.timeout:
                 for seq_num, packet in packets_in_window.items():
                     drtp.send_packet(packet, (drtp.ip, drtp.port))
@@ -253,6 +270,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--reliability_func', choices=['stop-and-wait', 'gbn', 'sr'], default='stop-and-wait',
                         help='Reliability function to use (default: stop_and_wait)')
     parser.add_argument('-w', '--window_size', default=5, type=int, help="Size of the sliding window")
+    parser.add_argument('-t', '--ack_skip', type=int, default=0, help="Skip every nth ACK message")
 
     args = parser.parse_args()
 
