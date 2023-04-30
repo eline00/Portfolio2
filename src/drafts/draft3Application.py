@@ -23,7 +23,7 @@ def client(args):
     if args.reliability_func == "stop-and-wait":
         stop_and_wait_client(client_drtp, args.file_name)  # Fix this line
     elif args.reliability_func == "gbn":
-        gbn_client(client_drtp, args.file_name)  # Fix this line
+        gbn_client(client_drtp, args.file_name, args.window_size)  # Fix this line
     elif args.reliability_func == "sr":
         sr_client(client_drtp, args.file_name)  # Fix this line
 
@@ -101,76 +101,72 @@ def stop_and_wait_client(drtp, file):
 
 
 def gbn_server(drtp, file):
+    print("GBN server started.")
     with open(file, 'wb') as f:
-        base = 0
-        seq_num = 0  # Initialize seq_num before the while loop
+        expected_seq_num = 0
         while True:
             try:
                 drtp.socket.settimeout(0.5)
                 data_packet, data_addr = drtp.receive_packet()
-                _, _, _, _, data = drtp.parse_packet(data_packet)
+                seq_num, _, flags, _, data = drtp.parse_packet(data_packet)
 
-                seq_num, _, flags, window = unpack("!IIHH", data_packet[:12])
-
-                
-                if flags & 0x01:  # Check if the FIN flag is set
+                if flags & drtp.FIN:
+                    print("FIN flag received.")
                     break
-                
-                # Send an ACK packet for the received packet
-                ack_packet = drtp.create_packet(seq_num, 0, 0x10, 0, b'')
-                drtp.send_packet(ack_packet, data_addr)
-                
-                if seq_num == base:
-                    f.write(data)
-                    base += 1
-            except socket.timeout:
-                # If timeout occurs, resend all unacknowledged packets in the window
-                for i in range(base, seq_num):
-                    packet = drtp.create_packet(i, 0, 0, 0, b'')
-                    drtp.send_packet(packet, data_addr)
-            except Exception:
-                # Catch other exceptions separately
-                pass
-                
 
-def gbn_client(drtp, file):
+                if seq_num == expected_seq_num:
+                    f.write(data)
+                    expected_seq_num += 1
+
+                ack_packet = drtp.create_packet(0, expected_seq_num, 0x10, 0, b'')
+                drtp.send_packet(ack_packet, data_addr)
+            except socket.timeout:
+                print("Timeout occurred on the server.")
+                continue
+
+def gbn_client(drtp, file, window_size):
+    print("GBN client started.")
     with open(file, 'rb') as f:
         base = 0
         next_seq_num = 0
-        packets_in_window = []
-        
+        packets_in_window = {}
+
         while True:
-            # Send new packets until the sliding window is full or there's no more data to send
-            while next_seq_num < base + args.window_size and not packets_in_window and len(packets_in_window) < args.window_size:
+            while next_seq_num < base + window_size:
                 data = f.read(1460)
                 if not data:
                     break
-                
-                packet = drtp.create_packet(next_seq_num, 0, 0, args.window_size, data)
+
+                packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
                 drtp.send_packet(packet, (drtp.ip, drtp.port))
-                packets_in_window.append((next_seq_num, packet))
+                packets_in_window[next_seq_num] = packet
                 next_seq_num += 1
-            
-            if not packets_in_window and not data:
+
+            if not packets_in_window:
                 break
-            
+
             try:
                 drtp.socket.settimeout(0.5)
                 ack_packet, ack_addr = drtp.receive_packet()
                 _, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)
-                
-                if flags & 0x10:  # Check if received packet is an ACK
-                    while packets_in_window and ack_num >= packets_in_window[0][0]:
-                        base += 1
-                        packets_in_window.pop(0)
+
+                if flags & 0x10:
+                    for seq_num in range(base, ack_num):
+                        packets_in_window.pop(seq_num)
+                    base = ack_num
             except socket.timeout:
-                # If timeout occurs, resend all unacknowledged packets in the window
-                for seq_num, packet in packets_in_window:
+                for seq_num, packet in packets_in_window.items():
                     drtp.send_packet(packet, (drtp.ip, drtp.port))
                     print(f"Timeout occurred. Resending packet with sequence number: {seq_num}")
 
+        # Send a packet with the FIN flag set after the file data has been sent
+        print("Sending FIN packet.")
+        fin_packet = drtp.create_packet(next_seq_num, 0, drtp.FIN, 0, b'')
+        drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
 
-def sr_server(drtp, file):
+
+
+def sr_server(drtp, file, window_size):
     with open(file, 'wb') as f:
         base = 0
         packets_in_window = {}
