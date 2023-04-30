@@ -1,0 +1,445 @@
+DRAFT 1:
+--------------------------DRTP------------------:
+import socket
+from struct import *
+import time
+import threading
+
+
+class DRTP:
+    HEADER_FORMAT = '!IIHH'
+    HEADER_SIZE = calcsize(HEADER_FORMAT)
+
+    def __init__(self, ip, port, reliability_method, timeout=0.5, window_size=5):
+        self.ip = ip
+        self.port = port
+        self.reliability_method = reliability_method
+        self.timeout = timeout
+        self.window_size = window_size
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.settimeout(self.timeout)
+
+    def create_packet(self, seq, ack, flags, win, data):
+        header = pack(self.HEADER_FORMAT, seq, ack, flags, win)
+        return header + data
+
+    def parse_header(self, header):
+        return unpack(self.HEADER_FORMAT, header)
+
+    def parse_flags(self, flags):
+        syn = flags & (1 << 3)
+        ack = flags & (1 << 2)
+        fin = flags & (1 << 1)
+        return syn, ack, fin
+
+    def establish_connection(self):
+        if self.reliability_method == 'send':
+            self.establish_sender_connection()
+        elif self.reliability_method == 'recv':
+            self.establish_receiver_connection()
+
+    def establish_sender_connection(self):
+        seq = 0
+        ack = 0
+        syn_flag = 1 << 3
+        self.socket.sendto(self.create_packet(seq, ack, syn_flag, 0, b''), (self.ip, self.port))
+        while True:
+            try:
+                data, _ = self.socket.recvfrom(1472)
+                header = data[:self.HEADER_SIZE]
+                seq, ack, flags, win = self.parse_header(header)
+                syn, ack_flag, fin = self.parse_flags(flags)
+                if syn and ack_flag:
+                    seq = 0
+                    ack = 1
+                    ack_flag = 1 << 2
+                    self.socket.sendto(self.create_packet(seq, ack, ack_flag, 0, b''), (self.ip, self.port))
+                    break
+            except socket.timeout:
+                self.socket.sendto(self.create_packet(seq, ack, syn_flag, 0, b''), (self.ip, self.port))
+
+    def establish_receiver_connection(self):
+        while True:
+            try:
+                data, addr = self.socket.recvfrom(1472)
+                header = data[:self.HEADER_SIZE]
+                seq, ack, flags, win = self.parse_header(header)
+                syn, ack_flag, fin = self.parse_flags(flags)
+                if syn:
+                    seq = 0
+                    ack = 1
+                    syn_flag = 1 << 3
+                    ack_flag = 1 << 2
+                    self.socket.sendto(self.create_packet(seq, ack, syn_flag | ack_flag, 0, b''), addr)
+                    break
+            except socket.timeout:
+                pass
+
+    def send_file(self, file_name):
+        with open(file_name, 'rb') as f:
+            file_data = f.read()
+        self.send_data(file_data)
+
+
+    def send_data(self, data):
+        if self.reliability_method == 'stop_and_wait':
+            self.stop_and_wait(data)
+        elif self.reliability_method == 'gbn':
+            self.gbn(data)
+        elif self.reliability_method == 'sr':
+            self.sr(data)
+
+    def receive_data(self, file_name):
+        if self.reliability_method == 'stop_and_wait':
+            return self.stop_and_wait_recv(file_name)
+        elif self.reliability_method == 'gbn':
+            return self.gbn_recv(file_name)
+        elif self.reliability_method == 'sr':
+            return self.sr_recv(file_name)
+
+
+    def close_connection(self):
+        self.socket.close()
+
+    def stop_and_wait(self, data):
+        seq = 0
+        data_idx = 0
+        while data_idx < len(data):
+            chunk = data[data_idx:data_idx + 1472 - self.HEADER_SIZE]
+            self.socket.sendto(self.create_packet(seq, 0, 0, 0, chunk), (self.ip, self.port))
+            try:
+                _, addr = self.socket.recvfrom(1472)
+            except socket.timeout:
+                continue
+            data_idx += len(chunk)
+            seq = 1 - seq
+
+    def stop_and_wait_recv(self, file_name):
+        seq = 0
+        with open(file_name, 'wb') as f:
+            while True:
+                try:
+                    data, addr = self.socket.recvfrom(1472)
+                    header = data[:self.HEADER_SIZE]
+                    r_seq, _, _, _ = self.parse_header(header)
+                    if r_seq == seq:
+                        f.write(data[self.HEADER_SIZE:])
+                        self.socket.sendto(self.create_packet(seq, 0, 0, 0, b''), addr)
+                        seq = 1 - seq
+                except socket.timeout:
+                    break
+
+    def gbn(self, data):
+        base = 0
+        next_seq = 0
+        unacknowledged_packets = {}
+        send_thread = threading.Thread(target=self.gbn_send, args=(data, unacknowledged_packets))
+        send_thread.start()
+        while base < len(data):
+            try:
+                _, addr = self.socket.recvfrom(1472)
+                header = data[:self.HEADER_SIZE]
+                _, ack, _, _ = self.parse_header(header)
+                if ack >= base:
+                    base = ack + 1
+            except socket.timeout:
+                base = self.gbn_resend(base, unacknowledged_packets)
+
+    def gbn_send(self, data, unacknowledged_packets):
+        seq = 0
+        data_idx = 0
+        while data_idx < len(data):
+            chunk = data[data_idx:data_idx + 1472 - self.HEADER_SIZE]
+            packet = self.create_packet(seq, 0, 0, 0, chunk)
+            self.socket.sendto(packet, (self.ip, self.port))
+            unacknowledged_packets[seq] = packet
+            seq = (seq + 1) % self.window_size
+            data_idx += len(chunk)
+
+    def gbn_resend(self, base, unacknowledged_packets):
+        for seq in range(base, base + self.window_size):
+            if seq in unacknowledged_packets:
+                self.socket.sendto(unacknowledged_packets[seq], (self.ip, self.port))
+        return base
+
+    def gbn_recv(self, file_name):
+        seq = 0
+        with open(file_name, 'wb') as f:
+            while True:
+                try:
+                    data, addr = self.socket.recvfrom(1472)
+                    header = data[:self.HEADER_SIZE]
+                    r_seq, _, _, _ = self.parse_header(header)
+                    if r_seq == seq:
+                        f.write(data[self.HEADER_SIZE:])
+                        seq = (seq + 1) % self.window_size
+                    self.socket.sendto(self.create_packet(0, seq, 0, 0, b''), addr)
+                except socket.timeout:
+                    break
+
+    def sr(self, data):
+        base = 0
+        next_seq = 0
+        unacknowledged_packets = {}
+        lock = threading.Lock()
+        send_thread = threading.Thread(target=self.sr_send, args=(data, unacknowledged_packets, lock))
+        send_thread.start()
+
+        while base < len(data):
+            try:
+                _, addr = self.socket.recvfrom(1472)
+                header = data[:self.HEADER_SIZE]
+                _, ack, _, _ = self.parse_header(header)
+
+                with lock:
+                    if ack in unacknowledged_packets:
+                        del unacknowledged_packets[ack]
+                        if ack == base:
+                            base += 1
+                            while base in unacknowledged_packets:
+                                del unacknowledged_packets[base]
+                                base += 1
+            except socket.timeout:
+                self.sr_resend(unacknowledged_packets, lock)
+
+    def sr_send(self, data, unacknowledged_packets, lock):
+        seq = 0
+        data_idx = 0
+        while data_idx < len(data):
+            chunk = data[data_idx:data_idx + 1472 - self.HEADER_SIZE]
+            packet = self.create_packet(seq, 0, 0, 0, chunk)
+            self.socket.sendto(packet, (self.ip, self.port))
+            with lock:
+                unacknowledged_packets[seq] = packet
+            seq = (seq + 1) % self.window_size
+            data_idx += len(chunk)
+
+    def sr_resend(self, unacknowledged_packets, lock):
+        with lock:
+            for seq, packet in unacknowledged_packets.items():
+                self.socket.sendto(packet, (self.ip, self.port))
+
+    def sr_recv(self, file_name):
+        buffer = {}
+        expected_seq = 0
+
+        with open(file_name, 'wb') as f:
+            while True:
+                try:
+                    data, addr = self.socket.recvfrom(1472)
+                    header = data[:self.HEADER_SIZE]
+                    r_seq, _, _, _ = self.parse_header(header)
+
+                    if r_seq == expected_seq:
+                        f.write(data[self.HEADER_SIZE:])
+                        expected_seq = (expected_seq + 1) % self.window_size
+                        while expected_seq in buffer:
+                            f.write(buffer[expected_seq])
+                            del buffer[expected_seq]
+                            expected_seq = (expected_seq + 1) % self.window_size
+                    elif r_seq not in buffer:
+                        buffer[r_seq] = data[self.HEADER_SIZE:]
+
+                    self.socket.sendto(self.create_packet(0, r_seq, 0, 0, b''), addr)
+
+                except socket.timeout:
+                    break
+
+-------------------APPLICATION--------------------------:
+import argparse
+from DRTPdraft2 import *
+
+
+def server(local_ip, local_port, file_name, reliability_func):
+
+	print('-' * 60)
+	print(f'Server is listening on port {local_port}')
+	print('-' * 60 + '\n')
+
+	while True:
+		# Connecting to client
+		stop_and_wait(sock, addr, msg)
+
+		print(f'\nA client is connected with {local_ip}:{local_port}\n')
+
+		# Recieveing a file from client
+		drtp.receive_data(file_name)
+
+	# Closing connection
+	drtp.close_connection()
+
+
+def client(remote_ip, remote_port, file_name, reliability_func):
+	# Creating DRTP instance
+	drtp = DRTP(remote_ip, remote_port, reliability_func)
+	drtp.establish_sender_connection()
+
+	print('\n' + '-' * 70)
+	print(f"A client connecting to server {remote_ip}, port {remote_port}")
+	print('-' * 70)
+
+	while True:
+
+		print(f"Client connected with {remote_ip}, port {remote_port}\n")
+
+		drtp.send_file(file_name)
+
+	drtp.close_connection()
+
+
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
+	parser.add_argument('-s', '--server', action='store_true', help='Run as server')
+	parser.add_argument('-c', '--client', action='store_true', help='Run as client')
+	parser.add_argument('-i', '--remote-ip', help='Remote server IP address')
+	parser.add_argument('-p', '--port', type=int, help='Server port number')
+	parser.add_argument('-b', '--bind', type=str, help='Local IP address')
+	parser.add_argument('-f', '--file-name', type=str, help='File name to transfer')
+	parser.add_argument('-r', '--reliability-function', choices=['stop-and-wait', 'GBN', 'SR'], default='stop-and-wait', help='Reliability function to use (default: stop-and-wait)')
+
+	args = parser.parse_args()
+
+	if args.reliability_function == 'stop-and-wait':
+		reliability_func = DRTP.stop_and_wait
+	elif args.reliability_function == 'GBN':
+		reliability_func = DRTP.gbn
+	elif args.reliability_function == 'SR':
+		reliability_func = DRTP.sr
+	else:
+		parser.error('Invalid reliability function specified')
+
+	if args.server:
+		server(args.bind, args.port, args.file_name, reliability_func)
+	elif args.client:
+		client(args.remote_ip, args.port, args.file_name, reliability_func)
+	else:
+		parser.print_help()
+
+
+------------------------DRAFT 2-------------------------------------
+------------------------DRTP2--------------------------------------
+import socket
+import sys
+import struct
+import time
+from threading import Timer
+
+SEQUENCE_SIZE = 32
+ACKNOWLEDGEMENT_SIZE = 32
+FLAGS_SIZE = 16
+WINDOW_SIZE = 16
+
+SYN = 0x08
+ACK = 0x04
+FIN = 0x02
+RESET = 0x01
+
+HEADER_SIZE = 12
+PACKET_SIZE = 1472
+APPLICATION_SIZE = PACKET_SIZE - HEADER_SIZE
+
+WINDOW = 64
+TIMEOUT = 0.5
+
+def create_packet(seq, ack, flags, window, msg=b''):
+    header = struct.pack('!IIHH', seq, ack, flags, window)
+    return header + msg
+
+def parse_packet(packet):
+    seq, ack, flags, window = struct.unpack('!IIHH', packet[:HEADER_SIZE])
+    msg = packet[HEADER_SIZE:]
+    return seq, ack, flags, window, msg
+
+def stop_and_wait(sock, addr, msg):
+    seq = 0
+    ack = 0
+    for i in range(0, len(msg), APPLICATION_SIZE):
+        data_chunk = msg[i:i + APPLICATION_SIZE]
+        packet = create_packet(seq, ack, ACK, WINDOW, data_chunk)
+        while True:
+            sock.sendto(packet, addr)
+            sock.settimeout(TIMEOUT)
+            try:
+                response, address = sock.recvfrom(PACKET_SIZE)
+                received_seq, received_ack, received_flags, received_window, received_msg = parse_packet(response)
+                if resceived_ack == seq + 1 and recieved_flags & ACK:
+                    seq += 1
+                    break
+            except socket.timeout:
+                continue
+
+    fin_packet = create_packet(seq, ack, FIN, WINDOW)
+    sock.sendto(fin_packet, addr)
+
+def gbn(sock, addr, msg):
+    base = 0
+    next_seq = 0
+    window_size = 5
+
+    # Initialize a list of empty byte strings with a fixed size
+    packets = [b""]
+    for i in range(1, window_size):
+        packets.append(b"")
+
+    def resend_unacked_packets():
+        nonlocal base
+        for i in range(base, next_seq):
+            sock.sendto(packets[i % window_size], addr)
+        timer = Timer(TIMEOUT, resend_unacked_packets)
+        timer.start()
+
+    while base < len(msg):
+        while next_seq < base + window_size and next_seq * APPLICATION_SIZE < len(msg):
+            start_idx = next_seq * APPLICATION_SIZE
+            end_idx = start_idx + APPLICATION_SIZE
+            data_chunk = msg[start_idx:end_idx]
+            packet = create_packet(next_seq, 0, ACK, WINDOW, data_chunk)
+            packets[next_seq % window_size] = packet
+            sock.sendto(packet, addr)
+            next_seq += 1
+
+        sock.settimeout(TIMEOUT)
+        try:
+            response, address = sock.recvfrom(PACKET_SIZE)
+            received_seq, received_ack, received_flags, received_window, received_msg = parse_packet(response)
+
+            if received_flags & ACK:
+                base = received_ack
+        except socket.timeout:
+            resend_unacked_packets()
+
+    fin_packet = create_packet(next_seq, 0, FIN, WINDOW)
+    sock.sendto(fin_packet, addr)
+
+def sr(sock, addr, msg):
+    raise NotImplementedError("Selective-Repeat protocol is not yet implemented")
+
+def main():
+    if len(sys.argv) < 5:
+        print("Usage: python DRTP.py <IP> <PORT> -r <PROTOCOL>")
+        sys.exit(1)
+
+    ip = sys.argv[1]
+    port = int(sys.argv[2])
+    protocol = sys.argv[4].lower()
+
+    if protocol not in ["stop_and_wait", "gbn", "sr"]:
+        print("Invalid protocol. Choose from 'stop_and_wait', 'gbn', or 'sr'.")
+        sys.exit(1)
+
+    server_address = (ip, port)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    message = b'Test message for reliable data transfer protocols.'
+
+    if protocol == "stop_and_wait":
+        stop_and_wait(sock, server_address, message)
+    elif protocol == "gbn":
+        gbn(sock, server_address, message)
+    elif protocol == "sr":
+        sr(sock, server_address, message)
+
+    sock.close()
+
+if __name__ == "__main__":
+    main()
