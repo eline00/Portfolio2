@@ -37,7 +37,6 @@ def client(args):
 def stop_and_wait_server(drtp, file):
     print("Server started.")
     with open(file, 'wb') as f:
-        received_fin = False
         while True:
             try:
                 drtp.socket.settimeout(0.5)
@@ -60,7 +59,6 @@ def stop_and_wait_server(drtp, file):
                     drtp.send_packet(ack_packet, data_addr)
                     
                     f.write(data)
-                    
                         
             except socket.timeout:
                     print("Timeout occurred on the server.")
