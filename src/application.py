@@ -5,6 +5,11 @@ def server(args):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind(('', args.port))
     server_drtp = DRTP(args.bind, args.port, server_socket)
+    
+    print("-----------------------------------------------")
+    print("A server is listening on port", args.port)             #Communicates that the server is ready to recieve transmition
+    print("-----------------------------------------------")
+    
     server_drtp.syn_server()
 
     if args.reliability_func == "stop-and-wait":
@@ -32,7 +37,6 @@ def client(args):
 def stop_and_wait_server(drtp, file):
     print("Server started.")
     with open(file, 'wb') as f:
-        received_fin = False
         while True:
             try:
                 drtp.socket.settimeout(0.5)
@@ -55,7 +59,6 @@ def stop_and_wait_server(drtp, file):
                     drtp.send_packet(ack_packet, data_addr)
                     
                     f.write(data)
-                    
                         
             except socket.timeout:
                     print("Timeout occurred on the server.")
