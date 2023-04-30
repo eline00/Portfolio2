@@ -6,6 +6,9 @@ def server(args):
     server_socket.bind(('', args.port))
     server_drtp = DRTP(args.bind, args.port, server_socket)
     server_drtp.syn_server()
+    print("-----------------------------------------------")
+    print("A server is listening on port", args.port)             #Communicates that the server is ready to recieve transmition
+    print("-----------------------------------------------")
 
     if args.reliability_func == "stop-and-wait":
         stop_and_wait_server(server_drtp, args.file_name)
