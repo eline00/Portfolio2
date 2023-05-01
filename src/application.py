@@ -102,7 +102,7 @@ def stop_and_wait_client(drtp, file):
                         ack_received = True
                       
                 except socket.timeout:
-                    print("Timeout occurred. Resending packet with sequence number:", seq_num)
+                    print(f"Timeout occurred. Resending packet with sequence number: {seq_num} \n")
                     
             seq += 1
         
@@ -170,7 +170,7 @@ def gbn_client(drtp, file, window_size):
             except socket.timeout:
                 for seq_num, packet in packets_in_window.items():
                     drtp.send_packet(packet, (drtp.ip, drtp.port))
-                    print(f"Timeout occurred. Resending packet with sequence number: {seq_num}")
+                    print(f"Timeout occurred. Resending packet with sequence number: {seq_num} \n")
 
         # Send a packet with the FIN flag set after the file data has been sent
         print("Sending FIN packet.")
@@ -241,7 +241,7 @@ def sr_client(drtp, file, window_size):
             except socket.timeout:
                 for seq_num, packet in packets_in_window.items():
                     drtp.send_packet(packet, (drtp.ip, drtp.port))
-                    print(f"Timeout occurred. Resending packet with sequence number: {seq_num}")
+                    print(f"Timeout occurred. Resending packet with sequence number: {seq_num}\n")
 
         # Send a packet with the FIN flag set after the file data has been sent
         print("Sending FIN packet.")

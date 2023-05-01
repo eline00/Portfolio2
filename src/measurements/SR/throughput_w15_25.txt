@@ -1,0 +1,10 @@
+Sending SYN from the client. Waiting for SYN-ACK.
+Received SYN-ACK packet from the server
+
+SR client started.
+Sending data
+Sending FIN packet.
+
+Elapsed Time: 101.22 s
+Transfered data: 327.37 Mb
+Throughput: 3.23 Mbps
