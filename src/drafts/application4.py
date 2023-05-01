@@ -129,8 +129,9 @@ def gbn_server(drtp, file, test_case):
                         ack_packet = drtp.create_packet(0, expected_seq_num, 0x10, 0, b'')
                         drtp.send_packet(ack_packet, data_addr)
 
-                ack_packet = drtp.create_packet(0, expected_seq_num, 0x10, 0, b'')
-                drtp.send_packet(ack_packet, data_addr)
+                else:
+                    ack_packet = drtp.create_packet(0, expected_seq_num, 0x10, 0, b'')
+                    drtp.send_packet(ack_packet, data_addr)
             except socket.timeout:
                 print("Timeout occurred on the server.")
                 continue
