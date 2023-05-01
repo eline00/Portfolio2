@@ -5,6 +5,6 @@ SR client started.
 Sending data
 Sending FIN packet.
 
-Elapsed Time: 0.43 s
+Elapsed Time: 0.20 s
 Transfered data: 0.10 Mb
-Throughput: 0.23 Mbps
+Throughput: 0.48 Mbps
