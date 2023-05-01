@@ -24,8 +24,9 @@ def server(args):
 def client(args):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_drtp = DRTP(args.remote_ip, args.port, client_socket)
+    print("Sending SYN from the client. Waiting for SYN-ACK.")
     client_drtp.syn_client()
-    print("SYN sent from the client. Waiting for SYN-ACK.")
+    
 
     start_time = time.time()
     if args.reliability_func == "stop-and-wait":
@@ -39,14 +40,16 @@ def client(args):
     elapsed_time = end_time - start_time
 
     file_size = os.path.getsize(args.file_name) * 8  # Convert to bits
-    throughput = (file_size / 1000000) / elapsed_time  # bits per second
+    throughput = file_size / (elapsed_time * 1000000)  # bits per second
     print(f"Throughput: {throughput:.2f} Mbps")
+    print(f"Elapsed Time: {elapsed_time:.2f}")
 
     client_drtp.close()
 
 def stop_and_wait_server(drtp, file):
     print("Server started.")
     with open(file, 'wb') as f:
+        print("Receiving data")
         while True:
             try:
                 drtp.socket.settimeout(0.5)
@@ -62,7 +65,6 @@ def stop_and_wait_server(drtp, file):
                     drtp.send_packet(ack_packet, data_addr)
                     break
                 else:
-                    print("Received data")
                     
                     # Send an ACK packet for the received packet
                     ack_packet = drtp.create_packet(0, seq_num, 0x10, 0, b'')
@@ -79,18 +81,16 @@ def stop_and_wait_client(drtp, file):
     print("Stop-and-wait client started.")
     with open(file, 'rb') as f:
         seq = 0
+        print("Sending data")
         while True:
             data = f.read(1460)
             if not data:
                 break
             
-            print("Sending data")
-            
             packet = drtp.create_packet(seq, 0, 0, 0, data)
             ack_received = False
             while not ack_received:
                 drtp.send_packet(packet, (drtp.ip, drtp.port))
-                print("Data packet sent to the server")
                 
                 try:
                     drtp.socket.settimeout(2)
@@ -99,9 +99,7 @@ def stop_and_wait_client(drtp, file):
                     
                     if flags & 0x10:
                         ack_received = True
-                        print("ACK received")
-                        
-                        
+                      
                 except socket.timeout:
                     print("Timeout occurred. Resending packet with sequence number:", seq_num)
                     
@@ -117,6 +115,7 @@ def gbn_server(drtp, file):
     print("GBN server started.")
     with open(file, 'wb') as f:
         expected_seq_num = 0
+        print("Receiving data")
         while True:
             try:
                 drtp.socket.settimeout(0.5)
@@ -143,7 +142,7 @@ def gbn_client(drtp, file, window_size):
         base = 0
         next_seq_num = 0
         packets_in_window = {}
-
+        print("Sending data")
         while True:
             while next_seq_num < base + window_size:
                 data = f.read(1460)
@@ -182,6 +181,7 @@ def gbn_client(drtp, file, window_size):
 def sr_server(drtp, file):
     print("SR server started.")
     with open(file, 'wb') as f:
+        print("Receiving data")
         expected_seq_num = 0
         received_packets = {}
         while True:
@@ -213,7 +213,7 @@ def sr_client(drtp, file, window_size):
         base = 0
         next_seq_num = 0
         packets_in_window = {}
-
+        print("Sending data")
         while True:
             while next_seq_num < base + window_size:
                 data = f.read(1460)
