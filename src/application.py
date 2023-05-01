@@ -30,19 +30,19 @@ def client(args):
 
     start_time = time.time()
     if args.reliability_func == "stop-and-wait":
-        stop_and_wait_client(client_drtp, args.file_name)  # Fix this line
+        stop_and_wait_client(client_drtp, args.file_name)
     elif args.reliability_func == "gbn":
-        gbn_client(client_drtp, args.file_name, args.window_size)  # Fix this line
+        gbn_client(client_drtp, args.file_name, args.window_size)  
     elif args.reliability_func == "sr":
-        sr_client(client_drtp, args.file_name, args.window_size)  # Fix this line
+        sr_client(client_drtp, args.file_name, args.window_size)  
 
     end_time = time.time()
     elapsed_time = end_time - start_time
 
-    file_size = os.path.getsize(args.file_name) * 8  # Convert to bits
-    throughput = file_size / (elapsed_time * 1000000)  # bits per second
+    file_size = (os.path.getsize(args.file_name) * 8) / 1000000  # Convert to bits
+    throughput = file_size / elapsed_time  # Mb per second
     print(f"\nElapsed Time: {elapsed_time:.2f} s")
-    print(f"Transfered data: {(file_size / 1000000):.2f} Mb")
+    print(f"Transfered data: {(file_size):.2f} Mb")
     print(f"Throughput: {throughput:.2f} Mbps")
 
     client_drtp.close()
