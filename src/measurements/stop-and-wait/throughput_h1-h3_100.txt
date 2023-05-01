@@ -29,4 +29,4 @@ Sending data
 Data packet sent to the server
 ACK received
 Sending FIN packet.
-Throughput: 0.26 Mbps
+Throughput: 0.17 Mbps

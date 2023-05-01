@@ -39,7 +39,7 @@ def client(args):
     elapsed_time = end_time - start_time
 
     file_size = os.path.getsize(args.file_name) * 8  # Convert to bits
-    throughput = file_size / (elapsed_time * 1000000)  # bits per second
+    throughput = (file_size / 1000000) / elapsed_time  # bits per second
     print(f"Throughput: {throughput:.2f} Mbps")
 
     client_drtp.close()
