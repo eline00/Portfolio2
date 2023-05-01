@@ -1,5 +1,7 @@
 import argparse
 from DRTP import *
+import time
+import os
 
 def server(args):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -24,13 +26,21 @@ def client(args):
     client_drtp = DRTP(args.remote_ip, args.port, client_socket)
     client_drtp.syn_client()
     print("SYN sent from the client. Waiting for SYN-ACK.")
-    
+
+    start_time = time.time()
     if args.reliability_func == "stop-and-wait":
         stop_and_wait_client(client_drtp, args.file_name)  # Fix this line
     elif args.reliability_func == "gbn":
         gbn_client(client_drtp, args.file_name, args.window_size)  # Fix this line
     elif args.reliability_func == "sr":
         sr_client(client_drtp, args.file_name, args.window_size)  # Fix this line
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+
+    file_size = os.path.getsize(args.file_name) * 8  # Convert to bits
+    throughput = file_size / (elapsed_time * 1000000)  # bits per second
+    print(f"Throughput: {throughput} Mbps")
 
     client_drtp.close()
 
