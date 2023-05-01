@@ -30,24 +30,25 @@ def client(args):
 
     start_time = time.time()
     if args.reliability_func == "stop-and-wait":
-        stop_and_wait_client(client_drtp, args.file_name)  # Fix this line
+        stop_and_wait_client(client_drtp, args.file_name)
     elif args.reliability_func == "gbn":
-        gbn_client(client_drtp, args.file_name, args.window_size)  # Fix this line
+        gbn_client(client_drtp, args.file_name, args.window_size)  
     elif args.reliability_func == "sr":
-        sr_client(client_drtp, args.file_name, args.window_size)  # Fix this line
+        sr_client(client_drtp, args.file_name, args.window_size)  
 
     end_time = time.time()
     elapsed_time = end_time - start_time
 
-    file_size = os.path.getsize(args.file_name) * 8  # Convert to bits
-    throughput = file_size / (elapsed_time * 1000000)  # bits per second
+    file_size = (os.path.getsize(args.file_name) * 8) / 1000000  # Convert to bits
+    throughput = file_size / elapsed_time  # Mb per second
+    print(f"\nElapsed Time: {elapsed_time:.2f} s")
+    print(f"Transfered data: {(file_size):.2f} Mb")
     print(f"Throughput: {throughput:.2f} Mbps")
-    print(f"Elapsed Time: {elapsed_time:.2f}")
 
     client_drtp.close()
 
 def stop_and_wait_server(drtp, file):
-    print("Server started.")
+    print("\nServer started.")
     with open(file, 'wb') as f:
         print("Receiving data")
         while True:
@@ -78,7 +79,7 @@ def stop_and_wait_server(drtp, file):
 
 
 def stop_and_wait_client(drtp, file):
-    print("Stop-and-wait client started.")
+    print("\nStop-and-wait client started.")
     with open(file, 'rb') as f:
         seq = 0
         print("Sending data")
@@ -112,7 +113,7 @@ def stop_and_wait_client(drtp, file):
 
 
 def gbn_server(drtp, file):
-    print("GBN server started.")
+    print("\nGBN server started.")
     with open(file, 'wb') as f:
         expected_seq_num = 0
         print("Receiving data")
@@ -137,7 +138,7 @@ def gbn_server(drtp, file):
                 continue
 
 def gbn_client(drtp, file, window_size):
-    print("GBN client started.")
+    print("\nGBN client started.")
     with open(file, 'rb') as f:
         base = 0
         next_seq_num = 0
@@ -179,7 +180,7 @@ def gbn_client(drtp, file, window_size):
 
 
 def sr_server(drtp, file):
-    print("SR server started.")
+    print("\nSR server started.")
     with open(file, 'wb') as f:
         print("Receiving data")
         expected_seq_num = 0
@@ -208,7 +209,7 @@ def sr_server(drtp, file):
                 continue
 
 def sr_client(drtp, file, window_size):
-    print("SR client started.")
+    print("\nSR client started.")
     with open(file, 'rb') as f:
         base = 0
         next_seq_num = 0
