@@ -18,7 +18,7 @@ def server(args):
 	if args.reliability_func == "stop-and-wait":
 		stop_and_wait_server(server_drtp, args.file_name)
 	elif args.reliability_func == "gbn":
-		gbn_server(server_drtp, args.file_name)
+		gbn_server(server_drtp, args.file_name, args.test_case)
 	elif args.reliability_func == "sr":
 		sr_server(server_drtp, args.file_name)
 	
@@ -113,7 +113,7 @@ def stop_and_wait_client(drtp, file):
 		drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
 
 
-def gbn_server(drtp, file):
+def gbn_server(drtp, file, test_case):
 	print("\nGBN server started.")
 	with open(file, 'wb') as f:
 		expected_seq_num = 0
@@ -276,6 +276,7 @@ if __name__ == '__main__':
 	parser.add_argument('-r', '--reliability_func', default='stop-and-wait',
 						help='Reliability function to use (default: stop_and_wait)')
 	parser.add_argument('-w', '--window_size', default=5, type=int, help="Size of the sliding window")
+	parser.add_argument('-t', '--test_case', type=str, default=None, help='Test case to run (e.g., skip_ack)')
 
 	args = parser.parse_args()
 	
