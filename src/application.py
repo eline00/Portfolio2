@@ -1,4 +1,6 @@
 import argparse
+import time
+import os
 from DRTP import *
 
 
@@ -19,15 +21,28 @@ def server(args):
 def client(args):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_drtp = DRTP(args.remote_ip, args.port, client_socket)
+    print("Sending SYN from the client. Waiting for SYN-ACK.")
     client_drtp.syn_client()
-    print("SYN sent from the client. Waiting for SYN-ACK.")
+    
 
+    start_time = time.time()
     if args.reliability_func == "stop-and-wait":
-        stop_and_wait_client(client_drtp, args.file_name) 
+        stop_and_wait_client(client_drtp, args.file_name)
     elif args.reliability_func == "gbn":
         gbn_client(client_drtp, args.file_name, args.window_size)  
     elif args.reliability_func == "sr":
         sr_client(client_drtp, args.file_name, args.window_size)  
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+
+    
+
+    file_size = (os.path.getsize(args.file_name) * 8) / 1000000  # Convert to bits
+    throughput = file_size / elapsed_time  # Mb per second
+    print(f"\nElapsed Time: {elapsed_time:.2f} s")
+    print(f"Transfered data: {(file_size):.2f} Mb")
+    print(f"Throughput: {throughput:.2f} Mbps")
 
     client_drtp.close()
 
@@ -200,7 +215,6 @@ def sr_server(drtp, file, test_case):
 
                     send_ack = False
                     while seq_num in received_packets:
-                        print(f"Writing packet with seq_num: {seq_num}")
                         f.write(received_packets[seq_num])
                         received_packets.pop(seq_num)
                         expected_seq_num += 1
