@@ -1,7 +1,6 @@
 import argparse
 from DRTP import *
-import time
-import os
+
 
 def server(args):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
