@@ -117,6 +117,7 @@ def gbn_server(drtp, file):
 	print("\nGBN server started.")
 	with open(file, 'wb') as f:
 		expected_seq_num = 0
+		skip_ack_counter = 0
 		print("Receiving data")
 		while True:
 			try:
@@ -135,8 +136,16 @@ def gbn_server(drtp, file):
 					f.write(data)
 					expected_seq_num += 1
 
-				ack_packet = drtp.create_packet(0, expected_seq_num, 0x10, 0, b'')
-				drtp.send_packet(ack_packet, data_addr)
+					# Skip sending an ACK if the test_case is 'skip_ack' and skip_ack_counter is 0
+					if test_case == "skip_ack" and skip_ack_counter == 0:
+						skip_ack_counter += 1
+					else:
+						ack_packet = drtp.create_packet(0, expected_seq_num, 0x10, 0, b'')
+						drtp.send_packet(ack_packet, data_addr)
+				
+				else:
+					ack_packet = drtp.create_packet(0, expected_seq_num, 0x10, 0, b'')
+					drtp.send_packet(ack_packet, data_addr)
 			except socket.timeout:
 				print("Timeout occurred on the server.")
 				continue
