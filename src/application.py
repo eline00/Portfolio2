@@ -2,12 +2,19 @@ import argparse
 import time
 import os
 from DRTP import *
+import time
+import os
 
 
 def server(args):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind(('', args.port))
     server_drtp = DRTP(args.bind, args.port, server_socket)
+
+    print("-----------------------------------------------")
+    print("A server is listening on port", args.port)             #Communicates that the server is ready to recieve transmition
+    print("-----------------------------------------------")
+
     server_drtp.syn_server()
 
     if args.reliability_func == "stop-and-wait":
@@ -210,8 +217,6 @@ def sr_server(drtp, file, test_case):
 
                     if seq_num not in received_packets:  # Check if the packet is already in the received_packets
                         received_packets[seq_num] = data
-                    else:
-                        print(f"Duplicate packet with seq_num: {seq_num}")
 
                     send_ack = False
                     while seq_num in received_packets:
@@ -219,9 +224,6 @@ def sr_server(drtp, file, test_case):
                         received_packets.pop(seq_num)
                         expected_seq_num += 1
                         send_ack = True
-                        print(expected_seq_num)
-                        if seq_num == 2:
-                            print(data)
                     ack_packet = drtp.create_packet(0, seq_num, 0x10, 0, b'')
                     drtp.send_packet(ack_packet, data_addr)
 
@@ -266,7 +268,6 @@ def sr_client(drtp, file, window_size):
 
                 packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
                 drtp.send_packet(packet, (drtp.ip, drtp.port))
-                print(f"Sent packet with seq_num: {next_seq_num}")
                 packets_in_window[next_seq_num] = packet
                 unacknowledged_packets.add(next_seq_num)  # Add the packet to the unacknowledged set
                 next_seq_num += 1
@@ -281,7 +282,6 @@ def sr_client(drtp, file, window_size):
 
                 if flags & 0x10:
                     if ack_num in packets_in_window:
-                        print(f"Acknowledged packet with seq_num: {ack_num}")
                         packets_in_window.pop(ack_num)
                         unacknowledged_packets.discard(ack_num)  # Remove the acknowledged packet from the set
                     if ack_num == base:
