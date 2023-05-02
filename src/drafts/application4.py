@@ -176,52 +176,61 @@ def gbn_client(drtp, file, window_size):
 
 
 def sr_server(drtp, file, test_case):
-    print("SR server started.")
-    with open(file, 'wb') as f:
-        expected_seq_num = 0
-        received_packets = {}
-        skip_ack_counter = 0
-        skipped_ack_num = None
+        print("SR server started.")
+        with open(file, 'wb') as f:
+            expected_seq_num = 0
+            received_packets = {}
+            skip_ack_counter = 0
+            skipped_ack_num = None
 
-        while True:
-            try:
-                drtp.socket.settimeout(0.5)
-                data_packet, data_addr = drtp.receive_packet()
-                seq_num, _, flags, _, data = drtp.parse_packet(data_packet)
+            while True:
+                try:
+                    drtp.socket.settimeout(0.5)
+                    data_packet, data_addr = drtp.receive_packet()
+                    seq_num, _, flags, _, data = drtp.parse_packet(data_packet)
 
-                if flags & drtp.FIN:
-                    print("FIN flag received.")
-                    break
+                    if flags & drtp.FIN:
+                        print("FIN flag received.")
+                        break
 
-                if seq_num not in received_packets:  # Check if the packet is already in the received_packets
-                    received_packets[seq_num] = data
-
-                send_ack = False
-                while expected_seq_num in received_packets:
-                    f.write(received_packets[expected_seq_num])
-                    received_packets.pop(expected_seq_num)
-                    expected_seq_num += 1
-                    send_ack = True
-
-                # Skip sending an ACK if the test_case is 'skip_ack' and skip_ack_counter is 0
-                if send_ack:
-                    if test_case == "skip_ack" and skip_ack_counter == 0:
-                        skip_ack_counter += 1
-                        skipped_ack_num = expected_seq_num
+                    if seq_num not in received_packets:  # Check if the packet is already in the received_packets
+                        received_packets[seq_num] = data
                     else:
-                        ack_packet = drtp.create_packet(0, expected_seq_num, 0x10, 0, b'')
-                        drtp.send_packet(ack_packet, data_addr)
+                        print(f"Duplicate packet with seq_num: {seq_num}")
 
-            except socket.timeout:
-                if test_case == "skip_ack" and skipped_ack_num is not None:
-                    # Send the ACK for the skipped packet after the initial timeout
-                    ack_packet = drtp.create_packet(0, skipped_ack_num, 0x10, 0, b'')
+                    send_ack = False
+                    while seq_num in received_packets:
+                        print(f"Writing packet with seq_num: {seq_num}")
+                        f.write(received_packets[seq_num])
+                        received_packets.pop(seq_num)
+                        expected_seq_num += 1
+                        send_ack = True
+                        print(expected_seq_num)
+                        if seq_num == 2:
+                            print(data)
+                    ack_packet = drtp.create_packet(0, seq_num, 0x10, 0, b'')
                     drtp.send_packet(ack_packet, data_addr)
-                    skipped_ack_num = None
-                    print("ACK for the skipped packet sent after the timeout")
-                else:
-                    print("Timeout occurred on the server.")
-                    continue
+
+                    # Skip sending an ACK if the test_case is 'skip_ack' and skip_ack_counter is 0
+                    if send_ack:
+                        if test_case == "skip_ack" and skip_ack_counter == 0:
+                            skip_ack_counter += 1
+                            skipped_ack_num = expected_seq_num
+                        else:
+                            ack_packet = drtp.create_packet(0, expected_seq_num, 0x10, 0, b'')
+                            drtp.send_packet(ack_packet, data_addr)
+
+                except socket.timeout:
+                    if test_case == "skip_ack" and skipped_ack_num is not None:
+                        # Send the ACK for the skipped packet after the initial timeout
+                        ack_packet = drtp.create_packet(0, skipped_ack_num, 0x10, 0, b'')
+                        drtp.send_packet(ack_packet, data_addr)
+                        skipped_ack_num = None
+                        print("ACK for the skipped packet sent after the timeout")
+                        
+                    else:
+                        print("Timeout occurred on the server.")
+                        continue
 
 
 def sr_client(drtp, file, window_size):
@@ -238,8 +247,12 @@ def sr_client(drtp, file, window_size):
                 if not data:
                     break
 
+                if len(data) < 1460:
+                    data = data.ljust(1460, b'\0')
+
                 packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
                 drtp.send_packet(packet, (drtp.ip, drtp.port))
+                print(f"Sent packet with seq_num: {next_seq_num}")
                 packets_in_window[next_seq_num] = packet
                 unacknowledged_packets.add(next_seq_num)  # Add the packet to the unacknowledged set
                 next_seq_num += 1
@@ -254,6 +267,7 @@ def sr_client(drtp, file, window_size):
 
                 if flags & 0x10:
                     if ack_num in packets_in_window:
+                        print(f"Acknowledged packet with seq_num: {ack_num}")
                         packets_in_window.pop(ack_num)
                         unacknowledged_packets.discard(ack_num)  # Remove the acknowledged packet from the set
                     if ack_num == base:
