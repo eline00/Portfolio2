@@ -1,11 +1,18 @@
 import argparse
 from DRTP import *
+import time
+import os
 
 
 def server(args):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind(('', args.port))
     server_drtp = DRTP(args.bind, args.port, server_socket)
+
+    print("-----------------------------------------------")
+    print("A server is listening on port", args.port)             #Communicates that the server is ready to recieve transmition
+    print("-----------------------------------------------")
+
     server_drtp.syn_server()
 
     if args.reliability_func == "stop-and-wait":
@@ -19,15 +26,28 @@ def server(args):
 def client(args):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_drtp = DRTP(args.remote_ip, args.port, client_socket)
+    print("Sending SYN from the client. Waiting for SYN-ACK.")
     client_drtp.syn_client()
-    print("SYN sent from the client. Waiting for SYN-ACK.")
+    
 
+    start_time = time.time()
     if args.reliability_func == "stop-and-wait":
-        stop_and_wait_client(client_drtp, args.file_name) 
+        stop_and_wait_client(client_drtp, args.file_name)
     elif args.reliability_func == "gbn":
         gbn_client(client_drtp, args.file_name, args.window_size)  
     elif args.reliability_func == "sr":
         sr_client(client_drtp, args.file_name, args.window_size)  
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+
+    
+
+    file_size = (os.path.getsize(args.file_name) * 8) / 1000000  # Convert to bits
+    throughput = file_size / elapsed_time  # Mb per second
+    print(f"\nElapsed Time: {elapsed_time:.2f} s")
+    print(f"Transfered data: {(file_size):.2f} Mb")
+    print(f"Throughput: {throughput:.2f} Mbps")
 
     client_drtp.close()
 
@@ -195,19 +215,13 @@ def sr_server(drtp, file, test_case):
 
                     if seq_num not in received_packets:  # Check if the packet is already in the received_packets
                         received_packets[seq_num] = data
-                    else:
-                        print(f"Duplicate packet with seq_num: {seq_num}")
 
                     send_ack = False
                     while seq_num in received_packets:
-                        print(f"Writing packet with seq_num: {seq_num}")
                         f.write(received_packets[seq_num])
                         received_packets.pop(seq_num)
                         expected_seq_num += 1
                         send_ack = True
-                        print(expected_seq_num)
-                        if seq_num == 2:
-                            print(data)
                     ack_packet = drtp.create_packet(0, seq_num, 0x10, 0, b'')
                     drtp.send_packet(ack_packet, data_addr)
 
@@ -252,7 +266,6 @@ def sr_client(drtp, file, window_size):
 
                 packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
                 drtp.send_packet(packet, (drtp.ip, drtp.port))
-                print(f"Sent packet with seq_num: {next_seq_num}")
                 packets_in_window[next_seq_num] = packet
                 unacknowledged_packets.add(next_seq_num)  # Add the packet to the unacknowledged set
                 next_seq_num += 1
@@ -267,7 +280,6 @@ def sr_client(drtp, file, window_size):
 
                 if flags & 0x10:
                     if ack_num in packets_in_window:
-                        print(f"Acknowledged packet with seq_num: {ack_num}")
                         packets_in_window.pop(ack_num)
                         unacknowledged_packets.discard(ack_num)  # Remove the acknowledged packet from the set
                     if ack_num == base:
