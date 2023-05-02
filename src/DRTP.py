@@ -35,7 +35,7 @@ class DRTP:
 			packet, addr = self.receive_packet()
 			seq_num, ack_num, flags, window, _ = self.parse_packet(packet)
 			if flags & self.SYN:
-				print("Received SYN packet from the client") # Add this print statement
+				print("\nReceived SYN packet from the client") # Add this print statement
 				# Received SYN packet from the client
 				syn_ack_packet = self.create_packet(seq_num+1, ack_num+1, self.SYN | self.ACK, window, b'')
 				self.send_packet(syn_ack_packet, addr)
