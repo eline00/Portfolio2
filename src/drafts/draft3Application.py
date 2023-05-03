@@ -50,6 +50,40 @@ def client(args):
 
     client_drtp.close()
 
+def data_transfer(ip_address, port_number, reliable_method, test_case):
+    # Implement GBN and SR data transfer here
+
+    # Check for the skip_seq test case
+    if test_case == 'skip_ack':
+        skip_acknowledgment(ip_address, port_number, reliable_method)
+
+    elif test_case == 'skip_seq':
+        skip_sequence_number(ip_address, port_number, reliable_method)
+
+
+def skip_acknowledgment(ip_address, port_number, reliable_method):
+    # Set up the environment for GBN or SR, depending on the reliable_method
+
+    # Send packets as usual
+
+    # Simulate the loss of an acknowledgment (ACK) for a specific packet
+
+    # Observe the sender's reaction to the missing ACK (e.g., timeout and retransmission)
+
+    # Print or log the results
+
+
+def skip_sequence_number(ip_address, port_number, reliable_method):
+    # Set up the environment for GBN or SR, depending on the reliable_method
+
+    # Send packets with the desired sequence number missing (skipped)
+
+    # Observe the out-of-order delivery effect and retransmission
+
+    # Print or log the results
+    return
+
+
 
 def stop_and_wait_server(drtp, file, test_case):
     print("\nStop-and-wait server started.")
