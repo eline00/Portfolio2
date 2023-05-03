@@ -50,40 +50,37 @@ def client(args):
 
     client_drtp.close()
 
-def data_transfer(ip_address, port_number, reliable_method, test_case):
-    # Implement GBN and SR data transfer here
+def data_transfer(ip_address, port_number, reliable_method, file_name, window_size, test_case):
+    if reliable_method == 'gbn':
+        if test_case == 'skip_ack':
+            gbn_client(args, file_name, window_size, skip_ack=True)
+        elif test_case == 'skip_seq':
+            gbn_client(args, file_name, window_size, skip_seq=True)
+        else:
+            gbn_client(args, file_name, window_size)
+    elif reliable_method == 'sr':
+        if test_case == 'skip_ack':
+            sr_client(args, file_name, window_size, skip_ack=True)
+        elif test_case == 'skip_seq':
+            sr_client(args, file_name, window_size, skip_seq=True)
+        else:
+            sr_client(args, file_name, window_size)
 
-    # Check for the skip_seq test case
-    if test_case == 'skip_ack':
-        skip_acknowledgment(ip_address, port_number, reliable_method)
-
-    elif test_case == 'skip_seq':
-        skip_sequence_number(ip_address, port_number, reliable_method)
-
-
-def skip_acknowledgment(ip_address, port_number, reliable_method):
-    # Set up the environment for GBN or SR, depending on the reliable_method
-
-    # Send packets as usual
-
-    # Simulate the loss of an acknowledgment (ACK) for a specific packet
-
-    # Observe the sender's reaction to the missing ACK (e.g., timeout and retransmission)
-
-    # Print or log the results
-
-
-def skip_sequence_number(ip_address, port_number, reliable_method):
-    # Set up the environment for GBN or SR, depending on the reliable_method
-
-    # Send packets with the desired sequence number missing (skipped)
-
-    # Observe the out-of-order delivery effect and retransmission
-
-    # Print or log the results
-    return
+"""
+def skip_acknowledgment(args, skip_ack=False):
+    if args.reliability_func == "gbn":
+        gbn_server(args, skip_ack=skip_ack)
+    elif args.reliability_func == "sr":
+        sr_server(args, skip_ack=skip_ack)
 
 
+def skip_sequence_number(args, skip_seq=False):
+    if args.reliability_func == "gbn":
+        gbn_server(args, skip_seq=skip_seq)
+    elif args.reliability_func == "sr":
+        sr_server(args, skip_seq=skip_seq)
+
+"""
 
 def stop_and_wait_server(drtp, file, test_case):
     print("\nStop-and-wait server started.")
@@ -160,7 +157,7 @@ def stop_and_wait_client(drtp, file):
         drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
 
 
-def gbn_server(drtp, file, test_case):
+def gbn_server(drtp, file, skip_ack=False, skip_seq=False):
     print("\nGBN server started.")
     with open(file, 'wb') as f:
         expected_seq_num = 0
@@ -195,7 +192,7 @@ def gbn_server(drtp, file, test_case):
                 continue
 
 
-def gbn_client(drtp, file, window_size):
+def gbn_client(drtp, file, window_size, skip_ack=False, skip_seq=False):
     print("\nGBN client started.")
     with open(file, 'rb') as f:
         base = 0
@@ -237,7 +234,7 @@ def gbn_client(drtp, file, window_size):
         drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
 
 
-def sr_server(drtp, file, test_case):
+def sr_server(drtp, file, test_case, skip_ack=False, skip_seq=False):
     print("\nSR server started.")
     with open(file, 'wb') as f:
         expected_seq_num = 0
@@ -288,7 +285,7 @@ def sr_server(drtp, file, test_case):
                     continue
 
 
-def sr_client(drtp, file, window_size):
+def sr_client(drtp, file, window_size, skip_ack=False, skip_seq=False):
     print("\nSR client started.")
     with open(file, 'rb') as f:
         base = 0
@@ -356,6 +353,6 @@ if __name__ == '__main__':
     if args.server:
         server(args)
     elif args.client:
-        client(args)
+        data_transfer(args.remote_ip, args.port, args.reliability_func, args.file_name, args.window_size, args.test_case)
     else:
         parser.print_help()
