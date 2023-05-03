@@ -332,7 +332,18 @@ def sr_client(drtp, file, window_size, skip_ack=False, skip_seq=False):
         drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
 
 
-if __name__ == '__main__':
+def main():
+    args = parse_arguments()
+
+    if args.server:
+        server(args)
+    elif args.client:
+        client(args)
+    else:
+        print("Please specify either --server or --client.")
+
+
+def parse_arguments():
     parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
     parser.add_argument('-s', '--server', action='store_true', help='Run as server')
     parser.add_argument('-c', '--client', action='store_true', help='Run as client')
@@ -342,14 +353,12 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--file_name', type=str, help='File name to transfer')
     parser.add_argument('-r', '--reliability_func', choices=['stop-and-wait', 'gbn', 'sr'], default='stop-and-wait',
                         help='Reliability function to use (default: stop_and_wait)')
-    parser.add_argument('-w', '--window_size', default=5, type=int, help="Size of the sliding window")
-    parser.add_argument('-t', '--test_case', type=str, default=None, help='Specify the test case to run')
+    parser.add_argument('-w', '--window_size', type=int, default=4, help='Window size for GBN and SR (default: 4)')
+    parser.add_argument('-t', '--test_case', choices=['skip_ack', 'skip_seq'], default=None,
+                        help='Test case to simulate packet loss (skip_ack or skip_seq)')
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    if args.server:
-        server(args)
-    elif args.client:
-        data_transfer(args.remote_ip, args.port, args.reliability_func, args.file_name, args.window_size, args.test_case)
-    else:
-        parser.print_help()
+
+if __name__ == '__main__':
+    main()
