@@ -155,13 +155,23 @@ def stop_and_wait_client(drtp, file):
                 drtp.send_packet(packet, (drtp.ip, drtp.port))
 
                 try:
+                    send_time = time.time()
                     drtp.socket.settimeout(0.5)
                     ack_packet, ack_addr = drtp.receive_packet()
+                    recv_time = time-time
                     seq_num, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)
-
-                    # Checks if the received packet is an ACK
+                    
+                    #Checks if the received packet is an ACK
                     if flags & 0x10:
                         ack_received = True
+                        rtt = recv_time - send_time
+                        rtt_sum += rtt
+                        packet_count += 1
+
+						# Calculate the average RTT and set the timeout to 4RTTs
+                        avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
+                        timeout = 4 * avg_rtt
+                        drtp.socket.settimeout(timeout)
 
                 except socket.timeout:
                     # Handles a timeout and resends the packet
@@ -271,8 +281,10 @@ def gbn_client(drtp, file, window_size, test_case):
 
             # Receives ACK packets and updates the base pointer accordingly
             try:
+                send_time = time.time()
                 drtp.socket.settimeout(0.5)
                 ack_packet, ack_addr = drtp.receive_packet()
+                recv_time = time.time()
                 _, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)
 
                 if flags & 0x10:
@@ -280,6 +292,15 @@ def gbn_client(drtp, file, window_size, test_case):
                         if seq_num in packets_in_window:  # Check if seq_num exists in the dictionary
                             packets_in_window.pop(seq_num)
                     base = ack_num
+                rtt = recv_time - send_time
+                rtt_sum += rtt
+                packet_count += 1
+                
+                # Calculate the average RTT and set the timeout to 4RTTs
+                avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
+                timeout = 4 * avg_rtt
+                drtp.socket.settimeout(timeout)
+                
             except socket.timeout:
 
                 # Resends all packets in the current window upon a timeout
@@ -395,8 +416,10 @@ def sr_client(drtp, file, window_size, test_case):
             # Description:
             # Receives ACK packets and updates the base sequence number and window accordingly
             try:
+                send_time = time.time()
                 drtp.socket.settimeout(0.5)
                 ack_packet, ack_addr = drtp.receive_packet()
+                recv_time = time.time()
                 seq_num, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)
 
                 if flags & 0x10:
@@ -405,6 +428,15 @@ def sr_client(drtp, file, window_size, test_case):
                             packets_in_window.pop(seq_num, None)
                             received[seq_num] = True
                         base = ack_num
+                rtt = recv_time - send_time
+                rtt_sum += rtt
+                packet_count += 1
+                
+                # Calculate the average RTT and set the timeout to 4RTTs
+                avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
+                timeout = 4 * avg_rtt
+                drtp.socket.settimeout(timeout)
+				
 
             except socket.timeout:
                 # Description:
