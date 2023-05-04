@@ -5,45 +5,67 @@ from DRTP import *
 import time
 import os
 
-
-def server(args):
+ # Description: 
+ # creates a server socket using UDP and utilizes DRTP for reliable data transfer
+ # establishes a connection with the client before selecting and running a specified reliability function
+ # Arguments: 
+ # ip: holds the ip address for the server
+ # port: port number of the server
+ # file_name: holds the filename for the received file
+ # reliablility_func: reliability function to use for sending data 
+ # test_case: test case to test the reliability functions
+ # Returns: 
+ # No returns, only prints message that the server is listening
+def server(ip, port, file_name, reliability_func, test_case):
 	server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	server_socket.bind(('', args.port))
-	server_drtp = DRTP(args.bind, args.port, server_socket)
+	server_socket.bind(('', port))
+	server_drtp = DRTP(ip, port, server_socket)
 
 	print("-----------------------------------------------")
-	print("A server is listening on port", args.port)             #Communicates that the server is ready to recieve transmition
+	print("A server is listening on port", port)             
 	print("-----------------------------------------------")
 
 	server_drtp.syn_server()
 
-	if args.reliability_func == "stop-and-wait":
-		stop_and_wait_server(server_drtp, args.file_name, args.test_case)
-	elif args.reliability_func == "gbn":
-		gbn_server(server_drtp, args.file_name, args.test_case)
-	elif args.reliability_func == "sr":
-		sr_server(server_drtp, args.file_name, args.test_case)
+	if reliability_func == "stop-and-wait":
+		stop_and_wait_server(server_drtp, file_name, test_case)
+	elif reliability_func == "gbn":
+		gbn_server(server_drtp, file_name, test_case)
+	elif reliability_func == "sr":
+		sr_server(server_drtp, file_name, test_case)
 
-
-def client(args):
+# Description: 
+# creates a client socket using UDP and utilizes DRTP for reliable data transfer
+# establishes a connection with the server before selecting and running a specified reliability function
+# calculates and prints the throughput for the file transfer
+# Arguments: 
+# ip: holds the ip address for the server
+# port: port number of the server
+# file_name: holds the filename for the received file
+# reliablility_func: reliability function to use for sending data 
+# window_size: specifies a size for the sliding window in the gbn and sr functions
+# test_case: test case to test the reliability functions
+# Returns: 
+# No returns, only prints the throughput of the file transfer
+def client(ip, port, file_name, reliability_func, window_size, test_case):
 	client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	client_drtp = DRTP(args.remote_ip, args.port, client_socket)
+	client_drtp = DRTP(ip, port, client_socket)
 	print("\nSending SYN from the client. Waiting for SYN-ACK.")
 	client_drtp.syn_client()
 	
 
 	start_time = time.time()
-	if args.reliability_func == "stop-and-wait":
-		stop_and_wait_client(client_drtp, args.file_name)
-	elif args.reliability_func == "gbn":
-		gbn_client(client_drtp, args.file_name, args.window_size, args.test_case)  
-	elif args.reliability_func == "sr":
-		sr_client(client_drtp, args.file_name, args.window_size, args.test_case)  
+	if reliability_func == "stop-and-wait":
+		stop_and_wait_client(client_drtp, file_name)
+	elif reliability_func == "gbn":
+		gbn_client(client_drtp, file_name, window_size, test_case)  
+	elif reliability_func == "sr":
+		sr_client(client_drtp, file_name, window_size, test_case)  
 
 	end_time = time.time()
 	elapsed_time = end_time - start_time
 
-	file_size = (os.path.getsize(args.file_name) * 8) / 1000000  # Convert to bits
+	file_size = (os.path.getsize(file_name) * 8) / 1000000  # Convert to bits
 	throughput = file_size / elapsed_time  # Mb per second
 	print(f"\nElapsed Time: {elapsed_time:.2f} s")
 	print(f"Transfered data: {(file_size):.2f} Mb")
@@ -51,6 +73,11 @@ def client(args):
 
 	client_drtp.close()
 
+# Description: 
+# server-side implementation of the Stop-and-wait protocal for reliable data transfer
+# Arguments: 
+
+# Returns: 
 
 def stop_and_wait_server(drtp, file, test_case):
 	print("\nStop-and-wait server started.")
@@ -325,9 +352,8 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
 	parser.add_argument('-s', '--server', action='store_true', help='Run as server')
 	parser.add_argument('-c', '--client', action='store_true', help='Run as client')
-	parser.add_argument('-I', '--remote_ip', default='127.0.0.1', help='Remote server IP address')
+	parser.add_argument('-i', '--ip', default='127.0.0.1', help='Remote server IP address')
 	parser.add_argument('-p', '--port', type=int, default=8080, help='Server port number')
-	parser.add_argument('-b', '--bind', default='127.0.0.1', type=str, help='Local IP address')
 	parser.add_argument('-f', '--file_name', type=str, help='File name to transfer')
 	parser.add_argument('-r', '--reliability_func', choices=['stop-and-wait', 'gbn', 'sr'], default='stop-and-wait',
 						help='Reliability function to use (default: stop_and_wait)')
@@ -337,8 +363,8 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	if args.server:
-		server(args)
+		server(args.ip, args.port, args.file_name, args.reliability_func, args.test_case)
 	elif args.client:
-		client(args)
+		client(args.ip, args.port, args.file_name, args.reliability_func, args.window_size, args.test_case)
 	else:
 		parser.print_help()
