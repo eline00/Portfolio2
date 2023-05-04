@@ -6,6 +6,7 @@ import os
 
 def calculate_timeout(send_time, recv_time, multiplier=4):
     rtt = recv_time - send_time
+    print(f"RTT: {rtt:.50f} seconds")  # Print the RTT value
     return rtt * multiplier
 
 
