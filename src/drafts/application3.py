@@ -4,6 +4,11 @@ import time
 import os
 
 
+def calculate_timeout(send_time, recv_time, multiplier=4):
+    rtt = recv_time - send_time
+    return rtt * multiplier
+
+
 def server(ip, port, file_name, reliability_func, test_case):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind(('', port))
@@ -106,9 +111,7 @@ def stop_and_wait_client(drtp, file):
             packet = drtp.create_packet(seq, 0, 0, 0, data)
             ack_received = False
             while not ack_received:
-
                 drtp.send_packet(packet, (drtp.ip, drtp.port))
-
                 try:
                     send_time = time.time()
                     drtp.socket.settimeout(0.5)  # Initial timeout value
@@ -116,8 +119,11 @@ def stop_and_wait_client(drtp, file):
                     recv_time = time.time()
                     seq_num, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)
 
+                    # Checks if the received packet is an ACK
                     if flags & 0x10:
                         ack_received = True
+                        timeout = calculate_timeout(send_time, recv_time)  # Calculate the new timeout value
+                        drtp.socket.settimeout(timeout)  # Update the socket's timeout value
 
                 except socket.timeout:
                     print(f"\nTimeout occurred. Resending packet with sequence number: {seq}")
@@ -195,12 +201,14 @@ def gbn_client(drtp, file, window_size, test_case):
 
             try:
                 send_time = time.time()
-                drtp.socket.settimeout(0.5)
+                drtp.socket.settimeout(0.5)  # Initial timeout value
                 ack_packet, ack_addr = drtp.receive_packet()
                 recv_time = time.time()
                 _, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)
 
                 if flags & 0x10:
+                    timeout = calculate_timeout(send_time, recv_time)  # Calculate the new timeout value
+                    drtp.socket.settimeout(timeout)  # Update the socket's timeout value
                     for seq_num in range(base, ack_num):
                         if seq_num in packets_in_window:  # Check if seq_num exists in the dictionary
                             packets_in_window.pop(seq_num)
@@ -296,12 +304,14 @@ def sr_client(drtp, file, window_size, test_case):
                 break
             try:
                 send_time = time.time()
-                drtp.socket.settimeout(0.5)
+                drtp.socket.settimeout(0.5)  # Initial timeout value
                 ack_packet, ack_addr = drtp.receive_packet()
                 recv_time = time.time()
                 seq_num, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)
 
                 if flags & 0x10:
+                    timeout = calculate_timeout(send_time, recv_time)  # Calculate the new timeout value
+                    drtp.socket.settimeout(timeout)  # Update the socket's timeout value
                     if ack_num > base:
                         for seq_num in range(base, ack_num):
                             packets_in_window.pop(seq_num, None)
