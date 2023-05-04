@@ -1,7 +1,7 @@
 import argparse
 import time
 import os
-from draft3DRTP import *
+from DRTP3 import *
 import time
 import os
 

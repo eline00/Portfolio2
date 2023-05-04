@@ -1,5 +1,4 @@
 import socket
-import time
 from struct import pack, unpack
 
 
@@ -37,7 +36,7 @@ class DRTP:
             packet, addr = self.receive_packet()
             seq_num, ack_num, flags, window, _ = self.parse_packet(packet)
             if flags & self.SYN:
-                print("Received SYN packet from the client")  # Add this print statement
+                print("\nReceived SYN packet from the client")  # Add this print statement
                 # Received SYN packet from the client
                 syn_ack_packet = self.create_packet(seq_num + 1, ack_num + 1, self.SYN | self.ACK, window, b'')
                 self.send_packet(syn_ack_packet, addr)
@@ -50,8 +49,7 @@ class DRTP:
         syn_packet = self.create_packet(syn_seq_num, 0, self.SYN, 64, b'')
         self.send_packet(syn_packet, (self.ip, self.port))
 
-        start_time = time.time()
-        self.socket.settimeout(1)  # Set the socket timeout to 1 second
+        self.socket.settimeout(5)
 
         while True:
             try:
@@ -64,9 +62,7 @@ class DRTP:
                                      (self.ip, self.port))
                     break
             except socket.timeout:
-                if time.time() - start_time > 5:  # Timeout of 5 seconds to establish connection
-                    raise ConnectionError("Connection timed out.")
-                print("Timeout occurred, resending SYN packet")  # Add this print statement
+                print("\nTimeout occurred, resending SYN packet")  # Add this print statement
                 # Resend the SYN packet if the timeout occurs
                 self.send_packet(syn_packet, (self.ip, self.port))
 

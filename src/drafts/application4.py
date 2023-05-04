@@ -1,5 +1,5 @@
 import argparse
-from DRTP import *
+from DRTP4 import *
 import time
 import os
 
