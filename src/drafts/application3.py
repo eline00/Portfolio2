@@ -176,6 +176,7 @@ def gbn_client(drtp, file, window_size, test_case):
         next_seq_num = 0
         packets_in_window = {}
         skipped_packet = None
+        
         while True:
             while next_seq_num < base + window_size:
                 data = f.read(1460)

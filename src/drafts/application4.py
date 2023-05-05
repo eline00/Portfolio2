@@ -255,6 +255,7 @@ def gbn_client(drtp, file, window_size, test_case):
         packet_count = 0
 
         skipped_packet = None
+        duplicate_packet = None
 
         while True:
             # Sends packets within the window size
@@ -266,20 +267,19 @@ def gbn_client(drtp, file, window_size, test_case):
                 # Skips sending a packet if the test_case is 'skip_seq' and next_seq_num is 0
                 if test_case == "skip_seq" and next_seq_num == 0:
                     print(f"Skipping packet with sequence number: {next_seq_num}")
-                    skipped_packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
                     next_seq_num += 1
-                    continue
-
+                    
                 packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
                 drtp.send_packet(packet, (drtp.ip, drtp.port))
                 packets_in_window[next_seq_num] = packet
                 next_seq_num += 1
+                
+                if test_case == "duplicate" and next_seq_num == 2:
+                    duplicate_packet = packets_in_window[next_seq_num - 1]
+                    print(f"Sending duplicate packet with sequence number: {duplicate_packet}")
+                    drtp.send_packet(duplicate_packet, (drtp.ip, drtp.port))
+                    duplicate_packet = None
 
-                # Sends a skipped packet after the next packet has been sent
-                if skipped_packet is not None:
-                    print(f"Sending out-of-order packet: {skipped_packet[1]}")
-                    drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
-                    skipped_packet = None
 
             # Exits the loop if all packets have been sent
             if not packets_in_window:
@@ -305,7 +305,6 @@ def gbn_client(drtp, file, window_size, test_case):
                 # Calculate the average RTT and set the timeout to 4RTTs
                 avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
                 timeout = 4 * avg_rtt
-                print(timeout)
                 drtp.socket.settimeout(timeout)
                 
             except socket.timeout:
@@ -394,6 +393,7 @@ def sr_client(drtp, file, window_size, test_case):
         packet_count = 0
 
         skipped_packet = None
+        skip_seq = 0
 
         while True:
             # Description:
@@ -403,21 +403,14 @@ def sr_client(drtp, file, window_size, test_case):
                 if not data:
                     break
 
-                if test_case == "skip_seq" and next_seq_num == 0:
-                    print(f"Skipping packet with sequence number: {next_seq_num}")
-                    skipped_packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
-                    next_seq_num += 1
-                    continue
-
                 packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
-                drtp.send_packet(packet, (drtp.ip, drtp.port))
-                packets_in_window[next_seq_num] = packet
+                if test_case == "skip_seq" and next_seq_num == skip_seq:
+                    print(f"Skipping packet with sequence number: {next_seq_num}")
+                    skipped_packet = packet
+                else:
+                    drtp.send_packet(packet, (drtp.ip, drtp.port))
+                    packets_in_window[next_seq_num] = packet
                 next_seq_num += 1
-
-                if skipped_packet is not None:
-                    print(f"Sending out-of-order packet: {skipped_packet[1]}")
-                    drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
-                    skipped_packet = None
 
             if not packets_in_window:
                 break
@@ -438,7 +431,6 @@ def sr_client(drtp, file, window_size, test_case):
                             received[seq_num] = True
                         base = ack_num
                 rtt = recv_time - send_time
-                print(rtt)
                 rtt_sum += rtt
                 packet_count += 1
                 
@@ -446,17 +438,25 @@ def sr_client(drtp, file, window_size, test_case):
                 avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
                 timeout = 4 * avg_rtt
                 drtp.socket.settimeout(timeout)
-                print(timeout)
 				
 
             except socket.timeout:
                 # Description:
                 # Handles timeouts and resends packets that have not been acknowledged
+                    
                 print("\nTimeout occurred.")
                 for seq_num, packet in packets_in_window.items():
                     if seq_num not in received:
                         drtp.send_packet(packet, (drtp.ip, drtp.port))
                         print(f"Resending packet with sequence number: {seq_num}")
+                        
+                if test_case == "skip_seq" and skipped_packet and base == skip_seq:
+                    drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
+                    print(f"Resending the previously skipped packet with seq: {skip_seq}")
+                    packets_in_window[skip_seq] = skipped_packet
+                    skipped_packet = None
+                        
+                
 
         # Description:
         # Sends a packet with the FIN flag set after the file data has been sent

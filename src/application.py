@@ -1,5 +1,5 @@
 import argparse
-from DRTP4 import *
+from DRTP import *
 import time
 import os
 
@@ -436,7 +436,6 @@ def sr_client(drtp, file, window_size, test_case):
                             received[seq_num] = True
                         base = ack_num
                 rtt = recv_time - send_time
-                print(rtt)
                 rtt_sum += rtt
                 packet_count += 1
                 
