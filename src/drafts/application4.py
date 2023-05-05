@@ -446,7 +446,7 @@ def sr_client(drtp, file, window_size, test_case):
                 avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
                 timeout = 4 * avg_rtt
                 drtp.socket.settimeout(timeout)
-                print (timeout)
+                print(timeout)
 				
 
             except socket.timeout:
