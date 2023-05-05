@@ -197,7 +197,7 @@ def gbn_server(drtp, file, test_case):
     # file: the file path where the received file will be saved
     # test_case: a test case to execute, such as 'skip_ack' to simulate a skipped acknowledgment
 
-    print("\nGBN server started.")
+    print("\nGo-Back-N server started.")
     with open(file, 'wb') as f:
         expected_seq_num = 0
         skip_ack_counter = 0
@@ -246,7 +246,7 @@ def gbn_client(drtp, file, window_size, test_case):
     # window_size: the window size for the Go-Back-N protocol
     # test_case: a test case to execute, such as 'skip_seq' to simulate a skipped packet
 
-    print("\nGBN client started.")
+    print("\nGo-Back-N client started.")
     with open(file, 'rb') as f:
         base = 0
         next_seq_num = 0
@@ -330,7 +330,7 @@ def sr_server(drtp, file, test_case):
     # file: the file path of the file to be received
     # test_case: a test case to execute, such as 'skip_ack' to simulate a skipped ACK packet
 
-    print("\nSR server started.")
+    print("\nSelective Repeat server started.")
     with open(file, 'wb') as f:
         expected_seq = 0
         skip_ack_counter = 0
