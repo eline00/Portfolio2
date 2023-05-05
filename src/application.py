@@ -3,20 +3,18 @@ from DRTP import *
 import time
 import os
 
-
-# Description:
-# creates a server socket using UDP and utilizes DRTP for reliable data transfer
-# establishes a connection with the client before selecting and running a specified reliability function
-# Arguments:
-# ip: holds the ip address for the server
-# port: port number of the server
-# file_name: holds the filename for the received file
-# reliablility_func: reliability function to use for sending data
-# test_case: test case to test the reliability functions
-# Returns:
-# No returns, only prints message that the server is listening
-
 def server(ip, port, file_name, reliability_func, test_case):
+    # Description:
+    # creates a server socket using UDP and utilizes DRTP for reliable data transfer
+    # establishes a connection with the client before selecting and running a specified reliability function
+    # Arguments:
+    # ip: holds the ip address for the server
+    # port: port number of the server
+    # file_name: holds the filename for the received file
+    # reliablility_func: reliability function to use for sending data
+    # test_case: test case to test the reliability functions
+    # Returns:
+    # No returns, only prints message that the server is listening
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind(('', port))
     server_drtp = DRTP(ip, port, server_socket)
@@ -34,21 +32,20 @@ def server(ip, port, file_name, reliability_func, test_case):
     elif reliability_func == "sr":
         sr_server(server_drtp, file_name, test_case)
 
-
-# Description:
-# creates a client socket using UDP and utilizes DRTP for reliable data transfer
-# establishes a connection with the server before selecting and running a specified reliability function
-# calculates and prints the throughput for the file transfer
-# Arguments: 
-# ip: holds the ip address for the server
-# port: port number of the server
-# file_name: holds the filename for the received file
-# reliablility_func: reliability function to use for sending data 
-# window_size: specifies a size for the sliding window in the gbn and sr functions
-# test_case: test case to test the reliability functions
-# Returns: 
-# No returns, only prints the throughput of the file transfer
 def client(ip, port, file_name, reliability_func, window_size, test_case):
+    # Description:
+    # creates a client socket using UDP and utilizes DRTP for reliable data transfer
+    # establishes a connection with the server before selecting and running a specified reliability function
+    # calculates and prints the throughput for the file transfer
+    # Arguments: 
+    # ip: holds the ip address for the server
+    # port: port number of the server
+    # file_name: holds the filename for the received file
+    # reliablility_func: reliability function to use for sending data 
+    # window_size: specifies a size for the sliding window in the gbn and sr functions
+    # test_case: test case to test the reliability functions
+    # Returns: 
+    # No returns, only prints the throughput of the file transfer
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_drtp = DRTP(ip, port, client_socket)
     print("\nSending SYN from the client. Waiting for SYN-ACK.")
@@ -393,7 +390,6 @@ def sr_client(drtp, file, window_size, test_case):
         skipped_packet = None
 
         while True:
-            # Description:
             # Sends packets within the window size and handles skipping packets for the test case
             while next_seq_num < base + window_size:
                 data = f.read(1460)
@@ -419,7 +415,6 @@ def sr_client(drtp, file, window_size, test_case):
             if not packets_in_window:
                 break
 
-            # Description:
             # Receives ACK packets and updates the base sequence number and window accordingly
             try:
                 send_time = time.time()
@@ -445,7 +440,6 @@ def sr_client(drtp, file, window_size, test_case):
                 drtp.socket.settimeout(timeout)
 				
             except socket.timeout:
-                # Description:
                 # Handles timeouts and resends packets that have not been acknowledged
                 print("\nTimeout occurred.")
                 for seq_num, packet in packets_in_window.items():
@@ -453,7 +447,6 @@ def sr_client(drtp, file, window_size, test_case):
                         drtp.send_packet(packet, (drtp.ip, drtp.port))
                         print(f"Resending packet with sequence number: {seq_num}")
 
-        # Description:
         # Sends a packet with the FIN flag set after the file data has been sent
         print("\nSending FIN packet.")
         fin_packet = drtp.create_packet(next_seq_num, 0, drtp.FIN, 0, b'')
