@@ -262,8 +262,9 @@ def gbn_client(drtp, file, window_size, test_case):
                     break
 
                 # Skips sending a packet if the test_case is 'skip_seq' and next_seq_num is 0
-                if test_case == "skip_seq" and next_seq_num == 0:
+                if test_case == "skip_seq" and next_seq_num == 4:
                     print(f"Skipping packet with sequence number: {next_seq_num}")
+                    skiped_seq_num = next_seq_num
                     skipped_packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
                     next_seq_num += 1
                     continue
@@ -275,7 +276,7 @@ def gbn_client(drtp, file, window_size, test_case):
 
                 # Sends a skipped packet after the next packet has been sent
                 if skipped_packet is not None:
-                    print(f"Sending out-of-order packet: {skipped_packet[1]}")
+                    print(f"Sending out-of-order packet: {skiped_seq_num}")
                     drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
                     skipped_packet = None
 
@@ -286,6 +287,7 @@ def gbn_client(drtp, file, window_size, test_case):
             # Receives ACK packets and updates the base pointer accordingly
             try:
                 send_time = time.time()
+                
                 drtp.socket.settimeout(0.5)
                 ack_packet, ack_addr = drtp.receive_packet()
                 recv_time = time.time()
@@ -435,7 +437,6 @@ def sr_client(drtp, file, window_size, test_case):
                             received[seq_num] = True
                         base = ack_num
                 rtt = recv_time - send_time
-                print(rtt)
                 rtt_sum += rtt
                 packet_count += 1
                 
