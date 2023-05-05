@@ -305,6 +305,7 @@ def gbn_client(drtp, file, window_size, test_case):
                 # Calculate the average RTT and set the timeout to 4RTTs
                 avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
                 timeout = 4 * avg_rtt
+                print(timeout)
                 drtp.socket.settimeout(timeout)
                 
             except socket.timeout:
