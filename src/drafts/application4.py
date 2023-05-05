@@ -138,6 +138,8 @@ def stop_and_wait_client(drtp, file):
     print("\nStop-and-wait client started.")
     with open(file, 'rb') as f:
         seq = 0
+        rtt_sum = 0
+        packet_count = 0
 
         print("Sending data...")
         while True:
