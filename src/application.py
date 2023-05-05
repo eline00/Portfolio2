@@ -121,7 +121,7 @@ def stop_and_wait_server(drtp, file, test_case):
 
             except socket.timeout:
                 # Handles a timeout and continues to receive packets
-                print("\nTimeout occurred on the server.")
+                print(f"\nTimeout occurred on the server. Did not receive packet: {expected_seq}")
                 continue
 
 
@@ -229,7 +229,7 @@ def gbn_server(drtp, file, test_case):
             except socket.timeout:
 
                 # Handles a timeout, indicating that no packet was received during the specified time
-                print("\nTimeout occurred on the server.")
+                print(f"\nTimeout occurred on the server. Did not receive packet: {expected_seq_num}")
                 continue
 
 
@@ -249,7 +249,9 @@ def gbn_client(drtp, file, window_size, test_case):
         packets_in_window = {}
         rtt_sum = 0
         packet_count = 0
+        
         skipped_packet = None
+        skip_seq = 0
 
         while True:
             # Sends packets within the window size
@@ -259,23 +261,14 @@ def gbn_client(drtp, file, window_size, test_case):
                     break
 
                 # Skips sending a packet if the test_case is 'skip_seq' and next_seq_num is 0
-                if test_case == "skip_seq" and next_seq_num == 4:
-                    print(f"Skipping packet with sequence number: {next_seq_num}")
-                    skiped_seq_num = next_seq_num
-                    skipped_packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
-                    next_seq_num += 1
-                    continue
-
                 packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
-                drtp.send_packet(packet, (drtp.ip, drtp.port))
-                packets_in_window[next_seq_num] = packet
+                if test_case == "skip_seq" and next_seq_num == skip_seq:
+                    print(f"Skipping packet with sequence number: {next_seq_num}")
+                    skipped_packet = packet
+                else:
+                    drtp.send_packet(packet, (drtp.ip, drtp.port))
+                    packets_in_window[next_seq_num] = packet
                 next_seq_num += 1
-
-                # Sends a skipped packet after the next packet has been sent
-                if skipped_packet is not None:
-                    print(f"Sending out-of-order packet: {skiped_seq_num}")
-                    drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
-                    skipped_packet = None
 
             # Exits the loop if all packets have been sent
             if not packets_in_window:
@@ -311,6 +304,12 @@ def gbn_client(drtp, file, window_size, test_case):
                 for seq_num, packet in packets_in_window.items():
                     drtp.send_packet(packet, (drtp.ip, drtp.port))
                     print(f"Resending packet with sequence number: {seq_num}")
+                    
+                if test_case == "skip_seq" and skipped_packet and base == skip_seq:
+                    drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
+                    print(f"Resending the previously skipped packet with seq: {skip_seq}")
+                    packets_in_window[skip_seq] = skipped_packet
+                    skipped_packet = None
 
         # Sends a packet with the FIN flag set after the file data has been sent
         print("\nSending FIN packet.")
@@ -367,7 +366,7 @@ def sr_server(drtp, file, test_case):
                     drtp.send_packet(ack_packet, data_addr)
 
             except socket.timeout:
-                print("\nTimeout occurred on the server.")
+                print(f"\nTimeout occurred on the server. Did not receive packet: {expected_seq}")
                 continue
 
 
@@ -390,6 +389,7 @@ def sr_client(drtp, file, window_size, test_case):
         packet_count = 0
 
         skipped_packet = None
+        skip_seq = 0
 
         while True:
             # Sends packets within the window size and handles skipping packets for the test case
@@ -398,21 +398,14 @@ def sr_client(drtp, file, window_size, test_case):
                 if not data:
                     break
 
-                if test_case == "skip_seq" and next_seq_num == 0:
-                    print(f"Skipping packet with sequence number: {next_seq_num}")
-                    skipped_packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
-                    next_seq_num += 1
-                    continue
-
                 packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
-                drtp.send_packet(packet, (drtp.ip, drtp.port))
-                packets_in_window[next_seq_num] = packet
+                if test_case == "skip_seq" and next_seq_num == skip_seq:
+                    print(f"Skipping packet with sequence number: {next_seq_num}")
+                    skipped_packet = packet
+                else:
+                    drtp.send_packet(packet, (drtp.ip, drtp.port))
+                    packets_in_window[next_seq_num] = packet
                 next_seq_num += 1
-
-                if skipped_packet is not None:
-                    print(f"Sending out-of-order packet: {skipped_packet[1]}")
-                    drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
-                    skipped_packet = None
 
             if not packets_in_window:
                 break
@@ -447,6 +440,12 @@ def sr_client(drtp, file, window_size, test_case):
                     if seq_num not in received:
                         drtp.send_packet(packet, (drtp.ip, drtp.port))
                         print(f"Resending packet with sequence number: {seq_num}")
+                        
+                if test_case == "skip_seq" and skipped_packet and base == skip_seq:
+                    drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
+                    print(f"Resending the previously skipped packet with seq: {skip_seq}")
+                    packets_in_window[skip_seq] = skipped_packet
+                    skipped_packet = None
 
         # Sends a packet with the FIN flag set after the file data has been sent
         print("\nSending FIN packet.")
