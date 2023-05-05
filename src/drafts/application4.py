@@ -138,6 +138,8 @@ def stop_and_wait_client(drtp, file):
     print("\nStop-and-wait client started.")
     with open(file, 'rb') as f:
         seq = 0
+        rtt_sum = 0
+        packet_count = 0
 
         print("Sending data...")
         while True:
@@ -195,7 +197,7 @@ def gbn_server(drtp, file, test_case):
     # file: the file path where the received file will be saved
     # test_case: a test case to execute, such as 'skip_ack' to simulate a skipped acknowledgment
 
-    print("\nGBN server started.")
+    print("\nGo-Back-N server started.")
     with open(file, 'wb') as f:
         expected_seq_num = 0
         skip_ack_counter = 0
@@ -244,11 +246,13 @@ def gbn_client(drtp, file, window_size, test_case):
     # window_size: the window size for the Go-Back-N protocol
     # test_case: a test case to execute, such as 'skip_seq' to simulate a skipped packet
 
-    print("\nGBN client started.")
+    print("\nGo-Back-N client started.")
     with open(file, 'rb') as f:
         base = 0
         next_seq_num = 0
         packets_in_window = {}
+        rtt_sum = 0
+        packet_count = 0
 
         skipped_packet = None
 
@@ -301,6 +305,7 @@ def gbn_client(drtp, file, window_size, test_case):
                 # Calculate the average RTT and set the timeout to 4RTTs
                 avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
                 timeout = 4 * avg_rtt
+                print(timeout)
                 drtp.socket.settimeout(timeout)
                 
             except socket.timeout:
@@ -325,7 +330,7 @@ def sr_server(drtp, file, test_case):
     # file: the file path of the file to be received
     # test_case: a test case to execute, such as 'skip_ack' to simulate a skipped ACK packet
 
-    print("\nSR server started.")
+    print("\nSelective Repeat server started.")
     with open(file, 'wb') as f:
         expected_seq = 0
         skip_ack_counter = 0
@@ -385,6 +390,8 @@ def sr_client(drtp, file, window_size, test_case):
         next_seq_num = 0
         packets_in_window = {}
         received = {}
+        rtt_sum = 0
+        packet_count = 0
 
         skipped_packet = None
 
@@ -439,7 +446,7 @@ def sr_client(drtp, file, window_size, test_case):
                 avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
                 timeout = 4 * avg_rtt
                 drtp.socket.settimeout(timeout)
-                print (timeout)
+                print(timeout)
 				
 
             except socket.timeout:
