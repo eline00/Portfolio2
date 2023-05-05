@@ -249,6 +249,8 @@ def gbn_client(drtp, file, window_size, test_case):
         base = 0
         next_seq_num = 0
         packets_in_window = {}
+        rtt_sum = 0
+        packet_count = 0
 
         skipped_packet = None
 
@@ -301,6 +303,7 @@ def gbn_client(drtp, file, window_size, test_case):
                 # Calculate the average RTT and set the timeout to 4RTTs
                 avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
                 timeout = 4 * avg_rtt
+                print("Timeout: ", timeout)
                 drtp.socket.settimeout(timeout)
                 
             except socket.timeout:
@@ -385,6 +388,8 @@ def sr_client(drtp, file, window_size, test_case):
         next_seq_num = 0
         packets_in_window = {}
         received = {}
+        rtt_sum = 0
+        packet_count = 0
 
         skipped_packet = None
 
