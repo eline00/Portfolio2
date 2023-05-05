@@ -1,7 +1,13 @@
+
 Sending SYN from the client. Waiting for SYN-ACK.
 Received SYN-ACK packet from the server
+
 GBN client started.
 Sending data
+
 Sending FIN packet.
-Throughput: 1.52 Mbps
-Elapsed Time: 0.06
+FIN-ACK received. Closing connection.
+
+Elapsed Time: 4.05 s
+Transfered data: 26.09 Mb
+Throughput: 6.45 Mbps
