@@ -390,6 +390,8 @@ def sr_client(drtp, file, window_size, test_case):
         next_seq_num = 0
         packets_in_window = {}
         received = {}
+        rtt_sum = 0
+        packet_count = 0
 
         skipped_packet = None
 
