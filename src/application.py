@@ -262,7 +262,7 @@ def gbn_client(drtp, file, window_size, test_case):
                     break
 
                 # Skips sending a packet if the test_case is 'skip_seq' and next_seq_num is 0
-                if test_case == "skip_seq" and next_seq_num == 0 or 3:
+                if test_case == "skip_seq" and next_seq_num == 0:
                     print(f"Skipping packet with sequence number: {next_seq_num}")
                     skipped_packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
                     next_seq_num += 1
