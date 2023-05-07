@@ -423,7 +423,6 @@ def sr_client(drtp, file, window_size, test_case):
             if not packets_in_window:
                 break
 
-            # Description:
             # Receives ACK packets and updates the base sequence number and window accordingly
             try:
                 send_time = time.time()
@@ -449,7 +448,6 @@ def sr_client(drtp, file, window_size, test_case):
 				
 
             except socket.timeout:
-                # Description:
                 # Handles timeouts and resends packets that have not been acknowledged
                           
                 if test_case == "skip_seq" and skipped_packet and base == skip_seq:
@@ -465,7 +463,6 @@ def sr_client(drtp, file, window_size, test_case):
                         drtp.send_packet(packet, (drtp.ip, drtp.port))
                         print(f"Resending packet with sequence number: {seq_num}")
                         
-        # Description:
         # Sends a packet with the FIN flag set after the file data has been sent
         print("\nSending FIN packet.")
         fin_packet = drtp.create_packet(next_seq_num, 0, drtp.FIN, 0, b'')
