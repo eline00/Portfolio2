@@ -167,8 +167,7 @@ def stop_and_wait_client(drtp, file):
                         rtt_sum += rtt
                         print(rtt)
                         packet_count += 1
-
-						# Calculate the average RTT and set the timeout to 4RTTs
+                        # Calculate the average RTT and set the timeout to 4RTTs
                         avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
                         timeout = 4 * avg_rtt
                         drtp.socket.settimeout(timeout)
@@ -433,7 +432,7 @@ def sr_client(drtp, file, window_size, test_case):
                 avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
                 timeout = 4 * avg_rtt
                 drtp.socket.settimeout(timeout)
-				
+
             except socket.timeout:
                 # Handles timeouts and resends packets that have not been acknowledged
 
