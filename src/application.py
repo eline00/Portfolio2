@@ -219,7 +219,7 @@ def gbn_server(drtp, file, test_case):
 
                     # Skips sending an ACK if the test_case is 'skip_ack' and skip_ack_counter is 0
                     if test_case == "skip_ack" and skip_ack_counter == 0:
-                        time.sleep(0.5)
+                        time.sleep(0.6)
                         skip_ack_counter += 1
                     else:
                         ack_packet = drtp.create_packet(0, expected_seq_num, 0x10, 0, b'')
