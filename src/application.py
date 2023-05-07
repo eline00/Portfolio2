@@ -24,7 +24,7 @@ def server(ip, port, file_name, reliability_func, test_case):
     print("-----------------------------------------------")
 
     server_drtp.syn_server()
-
+    
     if reliability_func == "stop-and-wait":
         stop_and_wait_server(server_drtp, file_name, test_case)
     elif reliability_func == "gbn":
@@ -84,7 +84,8 @@ def stop_and_wait_server(drtp, file, test_case):
         expected_seq = 0
         skip_ack_counter = 0
 
-        print("Receiving data...")
+        print("\nReceiving data...")
+
         while True:
             try:
                 drtp.socket.settimeout(0.5)
@@ -138,7 +139,7 @@ def stop_and_wait_client(drtp, file):
         rtt_sum = 0
         packet_count = 0
 
-        print("Sending data...")
+        print("\nTransmitting data...")
         while True:
             # Reads a chunk of data from the file to send
             data = f.read(1460)
@@ -197,6 +198,8 @@ def gbn_server(drtp, file, test_case):
     with open(file, 'wb') as f:
         expected_seq_num = 0
         skip_ack_counter = 0
+
+        print("Receiving data...")
         while True:
             try:
                 # Sets a timeout for receiving packets and attempts to receive a data packet
@@ -206,7 +209,7 @@ def gbn_server(drtp, file, test_case):
 
                 # Checks if the received packet has the FIN flag set, indicating the end of transmission
                 if flags & drtp.FIN:
-                    print("FIN flag received.")
+                    print("\nFIN flag received.")
                     break
 
                 # Processes the received packet if it has the expected sequence number
@@ -251,9 +254,10 @@ def gbn_client(drtp, file, window_size, test_case):
         rtt_sum = 0
         packet_count = 0
         skipped_packet = None
-        skip_seq = 4
+        skip_seq = 0
         duplicate_packet = None
 
+        print("Transmitting data...")
         while True:
             # Sends packets within the window size
             while next_seq_num < base + window_size:
@@ -395,9 +399,10 @@ def sr_client(drtp, file, window_size, test_case):
         received = {}
         rtt_sum = 0
         packet_count = 0
-
         skipped_packet = None
         skip_seq = 0
+
+        print("Transmitting data...")
 
         while True:
             # Sends packets within the window size and handles skipping packets for the test case
