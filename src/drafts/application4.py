@@ -124,7 +124,7 @@ def stop_and_wait_server(drtp, file, test_case):
 
             except socket.timeout:
                 # Handles a timeout and continues to receive packets
-                print("\nTimeout occurred on the server.")
+                print("\nTimeout occurred on the server. Did not receive packet: {seq}")
                 continue
 
 
