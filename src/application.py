@@ -247,9 +247,12 @@ def gbn_client(drtp, file, window_size, test_case):
         base = 0
         next_seq_num = 0
         packets_in_window = {}
+        received = {}
         rtt_sum = 0
         packet_count = 0
         skipped_packet = None
+        skip_seq = 4
+        duplicate_packet = None
 
         while True:
             # Sends packets within the window size
@@ -259,23 +262,20 @@ def gbn_client(drtp, file, window_size, test_case):
                     break
 
                 # Skips sending a packet if the test_case is 'skip_seq' and next_seq_num is 0
-                if test_case == "skip_seq" and next_seq_num == 4:
-                    print(f"Skipping packet with sequence number: {next_seq_num}")
-                    skiped_seq_num = next_seq_num
-                    skipped_packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
-                    next_seq_num += 1
-                    continue
-
                 packet = drtp.create_packet(next_seq_num, 0, 0, 0, data)
-                drtp.send_packet(packet, (drtp.ip, drtp.port))
-                packets_in_window[next_seq_num] = packet
+                if test_case == "skip_seq" and next_seq_num == skip_seq:
+                    print(f"Skipping packet with sequence number: {next_seq_num}")
+                    skipped_packet = packet
+                else:
+                    drtp.send_packet(packet, (drtp.ip, drtp.port))
+                    packets_in_window[next_seq_num] = packet
                 next_seq_num += 1
-
-                # Sends a skipped packet after the next packet has been sent
-                if skipped_packet is not None:
-                    print(f"Sending out-of-order packet: {skiped_seq_num}")
-                    drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
-                    skipped_packet = None
+                
+                if test_case == "duplicate" and next_seq_num == 2:
+                    duplicate_packet = packets_in_window[next_seq_num - 1]
+                    print(f"Sending duplicate packet with sequence number: {duplicate_packet}")
+                    drtp.send_packet(duplicate_packet, (drtp.ip, drtp.port))
+                    duplicate_packet = None
 
             # Exits the loop if all packets have been sent
             if not packets_in_window:
@@ -284,7 +284,6 @@ def gbn_client(drtp, file, window_size, test_case):
             # Receives ACK packets and updates the base pointer accordingly
             try:
                 send_time = time.time()
-                
                 drtp.socket.settimeout(0.5)
                 ack_packet, ack_addr = drtp.receive_packet()
                 recv_time = time.time()
@@ -307,10 +306,18 @@ def gbn_client(drtp, file, window_size, test_case):
             except socket.timeout:
 
                 # Resends all packets in the current window upon a timeout
+                if test_case == "skip_seq" and skipped_packet and base == skip_seq:
+                    drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
+                    print(f"Resending the previously skipped packet with seq: {skip_seq}")
+                    packets_in_window[skip_seq] = skipped_packet
+                    skipped_packet = None
+
                 print("\nTimeout occurred.")
-                for seq_num, packet in packets_in_window.items():
-                    drtp.send_packet(packet, (drtp.ip, drtp.port))
-                    print(f"Resending packet with sequence number: {seq_num}")
+                for seq_num in sorted(packets_in_window.keys()):
+                    packet = packets_in_window[seq_num]
+                    if seq_num not in received:
+                        drtp.send_packet(packet, (drtp.ip, drtp.port))
+                        print(f"Resending packet with sequence number: {seq_num}")
 
         # Sends a packet with the FIN flag set after the file data has been sent
         print("\nSending FIN packet.")
