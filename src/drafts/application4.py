@@ -56,7 +56,7 @@ def client(ip, port, file_name, reliability_func, window_size, test_case):
 
     start_time = time.time()
     if reliability_func == "stop-and-wait":
-        stop_and_wait_client(client_drtp, file_name)
+        stop_and_wait_client(client_drtp, file_name, test_case)
     elif reliability_func == "gbn":
         gbn_client(client_drtp, file_name, window_size, test_case)
     elif reliability_func == "sr":
@@ -117,8 +117,10 @@ def stop_and_wait_server(drtp, file, test_case):
                     else:
                         ack_packet = drtp.create_packet(0, expected_seq, 0x10, 0, b'')
                         drtp.send_packet(ack_packet, data_addr)
+                        
                 else:
                     # Sends an ACK for the last correctly received packet if the received sequence number does not match the expected one
+                    print(f"Discarding duplicate or out-of-order packet with sequence number: {seq_num}")
                     ack_packet = drtp.create_packet(0, expected_seq, 0x10, 0, b'')
                     drtp.send_packet(ack_packet, data_addr)
 
@@ -128,7 +130,7 @@ def stop_and_wait_server(drtp, file, test_case):
                 continue
 
 
-def stop_and_wait_client(drtp, file):
+def stop_and_wait_client(drtp, file, test_case):
     # Description:
     # Implements a stop-and-wait client for sending a file over a reliable transport protocol
     # Arguments:
@@ -168,14 +170,18 @@ def stop_and_wait_client(drtp, file):
                         ack_received = True
                         rtt = recv_time - send_time
                         rtt_sum += rtt
-                        print(rtt)
                         packet_count += 1
 
 						# Calculate the average RTT and set the timeout to 4RTTs
                         avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
                         timeout = 4 * avg_rtt
-                        print(timeout)
                         drtp.socket.settimeout(timeout)
+                        
+                    if test_case == "duplicate" and seq_num == 2:
+                        duplicate_packet = packets_in_window[eq_num - 1]
+                        print(f"Sending duplicate packet with sequence number: {seq_num}")
+                        drtp.send_packet(duplicate_packet, (drtp.ip, drtp.port))
+                        duplicate_packet = None
 
                 except socket.timeout:
                     # Handles a timeout and resends the packet
@@ -207,6 +213,8 @@ def gbn_server(drtp, file, test_case):
                 drtp.socket.settimeout(0.5)
                 data_packet, data_addr = drtp.receive_packet()
                 seq_num, _, flags, _, data = drtp.parse_packet(data_packet)
+                
+                print(f"Received packet: {seq_num}")
 
                 # Checks if the received packet has the FIN flag set, indicating the end of transmission
                 if flags & drtp.FIN:
@@ -228,6 +236,7 @@ def gbn_server(drtp, file, test_case):
 
                 else:
                     # Sends an ACK for the last correctly received packet if the received packet is out of order
+                    print(f"Discarding duplicate or out-of-order packet with sequence number: {seq_num}")
                     ack_packet = drtp.create_packet(0, expected_seq_num, 0x10, 0, b'')
                     drtp.send_packet(ack_packet, data_addr)
             except socket.timeout:
@@ -277,10 +286,9 @@ def gbn_client(drtp, file, window_size, test_case):
                 
                 if test_case == "duplicate" and next_seq_num == 2:
                     duplicate_packet = packets_in_window[next_seq_num - 1]
-                    print(f"Sending duplicate packet with sequence number: {duplicate_packet}")
+                    print(f"Sending duplicate packet with sequence number: {next_seq_num}")
                     drtp.send_packet(duplicate_packet, (drtp.ip, drtp.port))
                     duplicate_packet = None
-
 
             # Exits the loop if all packets have been sent
             if not packets_in_window:
@@ -321,6 +329,7 @@ def gbn_client(drtp, file, window_size, test_case):
                     print(f"Resending the previously skipped packet with seq: {skip_seq}")
                     packets_in_window[skip_seq] = skipped_packet
                     skipped_packet = None
+                    
                     
 
         # Sends a packet with the FIN flag set after the file data has been sent
@@ -374,6 +383,7 @@ def sr_server(drtp, file, test_case):
 
                 else:
                     # Re-sends ACK packet for the previous packet if the received sequence number does not match
+                    print(f"Discarding duplicate or out-of-order packet with sequence number: {seq_num}")
                     ack_packet = drtp.create_packet(0, expected_seq, 0x10, 0, b'')
                     drtp.send_packet(ack_packet, data_addr)
 
@@ -402,6 +412,7 @@ def sr_client(drtp, file, window_size, test_case):
 
         skipped_packet = None
         skip_seq = 0
+        duplicate_packet = None
 
         while True:
             # Description:
@@ -419,6 +430,12 @@ def sr_client(drtp, file, window_size, test_case):
                     drtp.send_packet(packet, (drtp.ip, drtp.port))
                     packets_in_window[next_seq_num] = packet
                 next_seq_num += 1
+                
+                if test_case == "duplicate" and next_seq_num == 2:
+                    duplicate_packet = packets_in_window[next_seq_num - 1]
+                    print(f"Sending duplicate packet with sequence number: {next_seq_num}")
+                    drtp.send_packet(duplicate_packet, (drtp.ip, drtp.port))
+                    duplicate_packet = None
 
             if not packets_in_window:
                 break
