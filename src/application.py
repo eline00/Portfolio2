@@ -140,7 +140,7 @@ def stop_and_wait_client(drtp, file, test_case):
 		rtt_sum = 0
 		packet_count = 0
 
-		print("\nTransmitting data...")
+		print("Transmitting data...")
 		while True:
 			# Reads a chunk of data from the file to send
 			data = f.read(1460)
