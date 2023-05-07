@@ -254,7 +254,6 @@ def gbn_client(drtp, file, window_size, test_case):
         received = {}
         rtt_sum = 0
         packet_count = 0
-
         skipped_packet = None
         skip_seq = 4
         duplicate_packet = None
@@ -281,7 +280,6 @@ def gbn_client(drtp, file, window_size, test_case):
                     print(f"Sending duplicate packet with sequence number: {duplicate_packet}")
                     drtp.send_packet(duplicate_packet, (drtp.ip, drtp.port))
                     duplicate_packet = None
-
 
             # Exits the loop if all packets have been sent
             if not packets_in_window:
