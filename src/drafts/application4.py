@@ -263,6 +263,7 @@ def gbn_client(drtp, file, window_size, test_case):
         received = {}
         rtt_sum = 0
         packet_count = 0
+        
         skipped_packet = None
         skip_seq = 4
         duplicate_packet = None
