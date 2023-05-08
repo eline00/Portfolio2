@@ -15,5 +15,7 @@ Resending packet with sequence number: 4
 Sending FIN packet.
 
 Elapsed Time: 14.05 s
-Transfered data: 26.09 Mb
+Transferred data: 26.09 Mb
 Throughput: 1.86 Mbps
+
+FIN-ACK received. Closing connection.

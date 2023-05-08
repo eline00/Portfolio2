@@ -3,9 +3,12 @@ Sending SYN from the client. Waiting for SYN-ACK.
 Received SYN-ACK packet from the server
 
 Selective Repeat client started.
+Transmitting data...
 
 Sending FIN packet.
 
 Elapsed Time: 47.31 s
-Transfered data: 26.09 Mb
+Transferred data: 26.09 Mb
 Throughput: 0.55 Mbps
+
+FIN-ACK received. Closing connection.

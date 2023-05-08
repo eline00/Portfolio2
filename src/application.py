@@ -65,9 +65,10 @@ def client(ip, port, file_name, reliability_func, window_size, test_case):
 	file_size = (os.path.getsize(file_name) * 8) / 1000000  # Convert to bits
 	throughput = file_size / elapsed_time  # Mb per second
 	print(f"\nElapsed Time: {elapsed_time:.2f} s")
-	print(f"Transfered data: {(file_size):.2f} Mb")
+	print(f"Transferred data: {(file_size):.2f} Mb")
 	print(f"Throughput: {throughput:.2f} Mbps")
 
+	print("\nFIN-ACK received. Closing connection.")
 	client_drtp.close()
 
 
@@ -180,7 +181,6 @@ def stop_and_wait_client(drtp, file, test_case):
 						avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
 						timeout = 4 * avg_rtt
 						drtp.socket.settimeout(timeout)
-
 
 				except socket.timeout:
 					# Handles a timeout and resends the packet

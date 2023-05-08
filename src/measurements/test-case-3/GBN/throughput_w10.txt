@@ -23,5 +23,7 @@ Resending packet with sequence number: 13
 Sending FIN packet.
 
 Elapsed Time: 7.48 s
-Transfered data: 26.09 Mb
+Transferred data: 26.09 Mb
 Throughput: 3.49 Mbps
+
+FIN-ACK received. Closing connection.
