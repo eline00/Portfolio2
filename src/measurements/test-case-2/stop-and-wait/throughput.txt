@@ -10,5 +10,7 @@ Timeout occurred. Resending packet with sequence number: 1
 Sending FIN packet.
 
 Elapsed Time: 34.98 s
-Transfered data: 26.09 Mb
+Transferred data: 26.09 Mb
 Throughput: 0.75 Mbps
+
+FIN-ACK received. Closing connection.

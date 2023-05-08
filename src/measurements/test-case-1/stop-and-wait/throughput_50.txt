@@ -3,11 +3,12 @@ Sending SYN from the client. Waiting for SYN-ACK.
 Received SYN-ACK packet from the server
 
 Stop-and-wait client started.
-Sending data
+Transmitting data...
 
 Sending FIN packet.
-FIN-ACK received. Closing connection.
 
 Elapsed Time: 60.39 s
-Transfered data: 26.09 Mb
+Transferred data: 26.09 Mb
 Throughput: 0.43 Mbps
+
+FIN-ACK received. Closing connection.

@@ -3,19 +3,12 @@ A server is listening on port 8080
 -----------------------------------------------
 
 Received SYN packet from the client
-SYN-ACK packet sent to ('10.0.0.1', 41825)
+SYN-ACK packet sent to ('10.0.0.1', 40540)
 
-Selective Repeat server started.
-Receiving data...
+Go-Back-N server started.
+Receiveing data...
 
 Discarding duplicate or out-of-order packet with sequence number: 2
-Skip ACK triggered at sequence number 0 
-
-Discarding duplicate or out-of-order packet with sequence number: 0
-Discarding duplicate or out-of-order packet with sequence number: 1
-Discarding duplicate or out-of-order packet with sequence number: 2
-Discarding duplicate or out-of-order packet with sequence number: 3
-Discarding duplicate or out-of-order packet with sequence number: 4
 Discarding duplicate or out-of-order packet with sequence number: 5
 Discarding duplicate or out-of-order packet with sequence number: 6
 Discarding duplicate or out-of-order packet with sequence number: 7
@@ -26,5 +19,12 @@ Discarding duplicate or out-of-order packet with sequence number: 11
 Discarding duplicate or out-of-order packet with sequence number: 12
 Discarding duplicate or out-of-order packet with sequence number: 13
 Discarding duplicate or out-of-order packet with sequence number: 14
+Discarding duplicate or out-of-order packet with sequence number: 15
+Discarding duplicate or out-of-order packet with sequence number: 16
+Discarding duplicate or out-of-order packet with sequence number: 17
+Discarding duplicate or out-of-order packet with sequence number: 18
 
-FIN flag received. Sending FIN-ACK
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 4
+
+FIN flag received.
