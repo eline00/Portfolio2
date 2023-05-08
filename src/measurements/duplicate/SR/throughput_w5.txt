@@ -8,6 +8,6 @@ Sending duplicate packet with sequence number: 2
 
 Sending FIN packet.
 
-Elapsed Time: 4.62 s
+Elapsed Time: 13.78 s
 Transfered data: 26.09 Mb
-Throughput: 5.65 Mbps
+Throughput: 1.89 Mbps
