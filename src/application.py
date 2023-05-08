@@ -15,8 +15,14 @@ def server(ip, port, file_name, reliability_func, test_case):
 	# test_case: test case to test the reliability functions
 	# Returns:
 	# No returns, only prints message that the server is listening
-	server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	server_socket.bind(('', port))
+	try:
+		server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	except socket.error as e:
+		print(f"Error creating socket: {e}")
+	try:
+		server_socket.bind(('', port))
+	except socket.error as e:
+		print(f"Error binding socket: {e}")
 	server_drtp = DRTP(ip, port, server_socket)
 
 	print("-----------------------------------------------")
@@ -71,6 +77,15 @@ def client(ip, port, file_name, reliability_func, window_size, test_case):
 	print("\nFIN-ACK received. Closing connection.")
 	client_drtp.close()
 
+# Helper function for error handling related to file
+def open_file(file_path, mode):
+	try:
+		return open(file_path, mode)
+	except FileNotFoundError:
+		print(f"File not found: {file_path}")
+	except PermissionError:
+		print(f"Permission denied for file: {file_path}")
+
 
 def stop_and_wait_server(drtp, file, test_case):
 	# Description:
@@ -81,7 +96,7 @@ def stop_and_wait_server(drtp, file, test_case):
 	# test_case: a test case to simulate (e.g., 'skip_ack' to skip an acknowledgment)
 
 	print("\nStop-and-wait server started.")
-	with open(file, 'wb') as f:
+	with open_file(file, 'wb') as f:
 		expected_seq = 0
 		skip_ack_counter = 0
 
@@ -136,7 +151,7 @@ def stop_and_wait_client(drtp, file, test_case):
 	# file: the file path to the file to be sent
 
 	print("\nStop-and-wait client started.")
-	with open(file, 'rb') as f:
+	with open_file(file, 'rb') as f:
 		expected_seq = 0
 		rtt_sum = 0
 		packet_count = 0
@@ -203,7 +218,7 @@ def gbn_server(drtp, file, test_case):
 	# test_case: a test case to execute, such as 'skip_ack' to simulate a skipped acknowledgment
 
 	print("\nGo-Back-N server started.")
-	with open(file, 'wb') as f:
+	with open_file(file, 'wb') as f:
 		expected_seq = 0
 		skip_ack_counter = 0
   
@@ -255,7 +270,7 @@ def gbn_client(drtp, file, window_size, test_case):
 	# test_case: a test case to execute, such as 'skip_seq' to simulate a skipped packet
 
 	print("\nGo-Back-N client started.")
-	with open(file, 'rb') as f:
+	with open_file(file, 'rb') as f:
 		base = 0
 		next_seq_num = 0
 		packets_in_window = {}
@@ -349,7 +364,7 @@ def sr_server(drtp, file, test_case):
 	# test_case: a test case to execute, such as 'skip_ack' to simulate a skipped ACK packet
 
 	print("\nSelective Repeat server started.")
-	with open(file, 'wb') as f:
+	with open_file(file, 'wb') as f:
 		expected_seq = 0
 		skip_ack_counter = 0
 
@@ -404,7 +419,7 @@ def sr_client(drtp, file, window_size, test_case):
 	# test_case: a test case to execute, such as 'skip_seq' to simulate skipping a packet sequence number
 
 	print("\nSelective Repeat client started.")
-	with open(file, 'rb') as f:
+	with open_file(file, 'rb') as f:
 		base = 0
 		next_seq_num = 0
 		packets_in_window = {}
