@@ -50,11 +50,8 @@ The application can be executed using command line arguments, which are detailed
     python3 application.py -c -i 127.0.0.1 -p 8080 -f photo_to_send.jpg -t skip_ack
     
 
-    By using these command-line arguments the application will be able to process all the distinctive flags and invoke the program either in server or client mode. With the specified parameters both client and server functions will then handle the file transfer using a chosen reliability function.     
+By using these command-line arguments the application will be able to process all the distinctive flags and invoke the program either in server or client mode. With the specified parameters both client and server functions will then handle the file transfer using a chosen reliability function.     
 
-    For each reliability function, the script defines seperate functions for both server and client roles. Each of these functions implements the logic for handling packet transmission, acknowledgement, timeouts, and error recovery. All which is handled and coordinated in different test case scenarios. 
-
-
-
+For each reliability function, the script defines seperate functions for both server and client roles. Each of these functions implements the logic for handling packet transmission, acknowledgement, timeouts, and error recovery. All which is handled and coordinated in different test case scenarios. 
 
 
