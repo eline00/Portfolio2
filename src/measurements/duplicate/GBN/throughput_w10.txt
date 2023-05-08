@@ -1,0 +1,13 @@
+
+Sending SYN from the client. Waiting for SYN-ACK.
+Received SYN-ACK packet from the server
+
+Go-Back-N client started.
+Transmitting data...
+Sending duplicate packet with sequence number: 2
+
+Sending FIN packet.
+
+Elapsed Time: 7.72 s
+Transfered data: 26.09 Mb
+Throughput: 3.38 Mbps
