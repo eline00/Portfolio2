@@ -1,4 +1,4 @@
-DRTP File Transfer Application
+# DRTP File Transfer Application
 
 This application is a file transfer program that utilizes the DRTP protocol to transfer files between two nodes over a network using the specified reliability function between a client and server. The application supports three functions:
 Stop-and-wait, Go-back-N(GBN), and Selective Repeat(SR). The user can choose the desired reliability function, and the application will handle file transfer according to the selected method. 
@@ -6,7 +6,8 @@ The program also supports the execution of various test cases, such as skipping 
 
 The application can be executed using command line arguments, which are detailed below.
 
-    Flags
+# Flags
+
     -s, --server
     Runs the application in server mode.
 
@@ -32,7 +33,8 @@ The application can be executed using command line arguments, which are detailed
     Specifies a test case run.
 
     
-    Example Usage
+# Example Usage
+
     Running as a server
     To run the application as a server, use the -s flag:
     python3 application.py -s -p 8080 -f received_photo.jpg 
@@ -52,6 +54,14 @@ The application can be executed using command line arguments, which are detailed
 
 By using these command-line arguments the application will be able to process all the distinctive flags and invoke the program either in server or client mode. With the specified parameters both client and server functions will then handle the file transfer using a chosen reliability function.     
 
-For each reliability function, the script defines seperate functions for both server and client roles. Each of these functions implements the logic for handling packet transmission, acknowledgement, timeouts, and error recovery. All which is handled and coordinated in different test case scenarios. 
+For each reliability function, the application defines seperate functions for both server and client roles. Each of these functions implements the logic for handling packet transmission, acknowledgement, timeouts, and error recovery. All which is handled and coordinated in different test case scenarios. 
+
+The application also supports running some specific test cases. These re designed to simulate network conditions or behaviors to verify the robustness and correctness of the protocol implementation. 
+
+These flags and test cases are used throughout the script in the implementation of different reliable data transfer protocols. Each of these protocols has different ways of handling packet loss, transmission errors, and ordering issues, providing different trade-offs between complexity and efficiency. 
+
+
+
+
 
 
