@@ -544,21 +544,32 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
 	parser.add_argument('-s', '--server', action='store_true', help='Run as server')
 	parser.add_argument('-c', '--client', action='store_true', help='Run as client')
-	parser.add_argument('-I', '--remote_ip', default='127.0.0.1', help='Remote server IP address')
 	parser.add_argument('-i', '--ip', default='127.0.0.1', help='Remote server IP address')
 	parser.add_argument('-p', '--port', type=int, default=8080, help='Server port number')
-	parser.add_argument('-b', '--bind', default='127.0.0.1', type=str, help='Local IP address')
 	parser.add_argument('-f', '--file_name', type=str, help='File name to transfer')
-	parser.add_argument('-r', '--reliability_func', choices=['stop-and-wait', 'gbn', 'sr'], default='stop-and-wait',
+	parser.add_argument('-r', '--reliability_func', default='stop-and-wait',
 						help='Reliability function to use (default: stop_and_wait)')
 	parser.add_argument('-w', '--window_size', default=5, type=int, help="Size of the sliding window")
 	parser.add_argument('-t', '--test_case', type=str, default=None, help='Test case to run (e.g., skip_ack)')
 
 	args = parser.parse_args()
+ 
+	if args.port not in range(1024, 65536):
+		print('Port out of range: port must be between 1024 and 65536!')
+		sys.exit(1)
+  
+	if args.reliability_func not in ['stop-and-wait', 'gbn', 'sr']:
+		print('Invalid reliability function: choose between stop-and-wait, gbn or sr!')
+		sys.exit(1)
+  
+	if args.test_case is not None and args.test_case not in ['skip_ack', 'skip_seq', 'duplicate']:
+		print('No such test case: choose between skip_ack, skip_seq or duplicate!')
+		sys.exit(1)
 
 	if args.server:
 		server(args.ip, args.port, args.file_name, args.reliability_func, args.test_case)
 	elif args.client:
 		client(args.ip, args.port, args.file_name, args.reliability_func, args.window_size, args.test_case)
 	else:
-		parser.print_help()
+		print('Error: must be in either client(-c) or server(-s) mode!')
+		sys.exit(1)
