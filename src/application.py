@@ -2,10 +2,11 @@ import argparse
 from DRTP import *
 import time
 import os
+
 import sys
 
 # Description:
-# creates a server socket using UDP and utilizes DRTP for reliable data transfer
+    # creates a server socket using UDP and utilizes DRTP for reliable data transfer
 # establishes a connection with the client before selecting and running a specified reliability function
 # Arguments:
 # ip: holds the ip address for the server
@@ -16,15 +17,22 @@ import sys
 # Returns:
 # No returns, only prints message that the server is listening
 def server(ip, port, file_name, reliability_func, test_case):
-	server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)				
-	server_socket.bind((ip, port))													
-	server_drtp = DRTP(ip, port, server_socket)
 
-	print("-----------------------------------------------")
-	print("A server is listening on port", port)
-	print("-----------------------------------------------")
+    try:
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    except socket.error as e:
+        print(f"Error creating socket: {e}")
+    try:
+        server_socket.bind(('', port))
+    except socket.error as e:
+        print(f"Error binding socket: {e}")
+    server_drtp = DRTP(ip, port, server_socket)
 
-	server_drtp.syn_server()
+    print("-----------------------------------------------")
+    print("A server is listening on port", port)
+    print("-----------------------------------------------")
+
+    server_drtp.syn_server()
 
 	if reliability_func == "stop-and-wait":
 		stop_and_wait_server(server_drtp, file_name, test_case)
@@ -74,6 +82,15 @@ def client(ip, port, file_name, reliability_func, window_size, test_case):
 
 	print("\nFIN-ACK received. Closing connection.")
 	client_drtp.close()															# Closing the connection upon receiving FIN
+ 
+ # Helper function for error handling related to file
+def open_file(file_path, mode):
+    try:
+        return open(file_path, mode)
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+    except PermissionError:
+        print(f"Permission denied for file: {file_path}")
 
 # Description:
 # Implements a stop-and-wait server for receiving a file over a reliable transport protocol
@@ -84,7 +101,7 @@ def client(ip, port, file_name, reliability_func, window_size, test_case):
 def stop_and_wait_server(drtp, file, test_case):
 
 	print("\nStop-and-wait server started.")
-	with open(file, 'wb') as f:
+	with open_file(file, 'wb') as f:
 		expected_seq = 0																# Expects the first packet to have sequence number 0
 		skip_ack_counter = 0															# Initializing skip ack counter to 0
 
@@ -137,7 +154,7 @@ def stop_and_wait_client(drtp, file, test_case):
 	print("\nStop-and-wait client started.")
  
 	# Opening file in read binary mode
-	with open(file, 'rb') as f:
+	with open_file(file, 'rb') as f:
 		expected_seq = 0									# Expecting the first sequence number to be 0
   
 		# Initializing variables for calculating RTT
@@ -182,21 +199,21 @@ def stop_and_wait_client(drtp, file, test_case):
 						rtt_sum += rtt
 						packet_count += 1
 
-						# Calculate the average RTT and set the timeout to 4RTTs
-						avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
-						timeout = 4 * avg_rtt
-						drtp.socket.settimeout(timeout)
+                        # Calculate the average RTT and set the timeout to 4RTTs
+                        avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
+                        timeout = 4 * avg_rtt
+                        drtp.socket.settimeout(timeout)
 
-				except socket.timeout:
-					# Handles a timeout and resends the packet
-					print(f"\nTimeout occurred. Resending packet with sequence number: {expected_seq}")
+                except socket.timeout:
+                    # Handles a timeout and resends the packet
+                    print(f"\nTimeout occurred. Resending packet with sequence number: {expected_seq}")
 
 			expected_seq += 1					# Increasing the expected sequence number
 
-		# Sends a packet with the FIN flag set after the file data has been sent
-		print("\nSending FIN packet.")
-		fin_packet = drtp.create_packet(expected_seq, 0, drtp.FIN, 0, b'')
-		drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
+        # Sends a packet with the FIN flag set after the file data has been sent
+        print("\nSending FIN packet.")
+        fin_packet = drtp.create_packet(expected_seq, 0, drtp.FIN, 0, b'')
+        drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
 
 # Description:
 # Implements a Go-Back-N server for receiving a file over a reliable transport protocol
@@ -209,7 +226,7 @@ def gbn_server(drtp, file, test_case):
 	print("\nGo-Back-N server started.")
  
 	# Opening the file in write binary mode
-	with open(file, 'wb') as f:
+	with open_file(file, 'wb') as f:
 		expected_seq = 0											# Expecting the sequence number to start at 0
 		skip_ack_counter = 0										# Initializing the skip ack variable so that the first packet is skipped
   
@@ -220,10 +237,10 @@ def gbn_server(drtp, file, test_case):
 				data_packet, data_addr = drtp.receive_packet()		# Receives a packet from the client
 				seq_num, _, flags, _, data = drtp.parse_packet(data_packet)
 
-				# Checks if the received packet has the FIN flag set, indicating the end of transmission
-				if flags & drtp.FIN:
-					print("\nFIN flag received.")
-					break
+                # Checks if the received packet has the FIN flag set, indicating the end of transmission
+                if flags & drtp.FIN:
+                    print("\nFIN flag received.")
+                    break
 
 				# Processes and write the received packet to file if it has the expected sequence number
 				if seq_num == expected_seq:
@@ -306,9 +323,9 @@ def gbn_client(drtp, file, window_size, test_case):
 					drtp.send_packet(duplicate_packet, (drtp.ip, drtp.port))
 					duplicate_packet = None
 
-			# Exits the loop if all packets have been sent
-			if not packets_in_window:
-				break
+            # Exits the loop if all packets have been sent
+            if not packets_in_window:
+                break
 
 			# Receives ACK packets and updates the base pointer accordingly
 			try:
@@ -338,12 +355,12 @@ def gbn_client(drtp, file, window_size, test_case):
 				
 			except socket.timeout:
 
-				# Resends all packets in the current window upon a timeout
-				if test_case == "skip_seq" and skipped_packet and base == skip_seq:
-					drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
-					print(f"Resending the previously skipped packet with seq: {skip_seq}")
-					packets_in_window[skip_seq] = skipped_packet
-					skipped_packet = None
+                # Resends all packets in the current window upon a timeout
+                if test_case == "skip_seq" and skipped_packet and base == skip_seq:
+                    drtp.send_packet(skipped_packet, (drtp.ip, drtp.port))
+                    print(f"Resending the previously skipped packet with seq: {skip_seq}")
+                    packets_in_window[skip_seq] = skipped_packet
+                    skipped_packet = None
 
 				# Resends all packets in the window in case of timeout
 				print("\nTimeout occurred.")
@@ -353,10 +370,10 @@ def gbn_client(drtp, file, window_size, test_case):
 						drtp.send_packet(packet, (drtp.ip, drtp.port))
 						print(f"Resending packet with sequence number: {seq_num}")
 
-		# Sends a packet with the FIN flag set after the file data has been sent
-		print("\nSending FIN packet.")
-		fin_packet = drtp.create_packet(next_seq_num, 0, drtp.FIN, 0, b'')
-		drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
+        # Sends a packet with the FIN flag set after the file data has been sent
+        print("\nSending FIN packet.")
+        fin_packet = drtp.create_packet(next_seq_num, 0, drtp.FIN, 0, b'')
+        drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
 
 # Description:
 # Implements a Selective Repeat server for receiving a file over a reliable transport protocol
@@ -369,7 +386,7 @@ def sr_server(drtp, file, test_case):
 	print("\nSelective Repeat server started.")
  
 	# Opening file in write binary mode
-	with open(file, 'wb') as f:
+	with open_file(file, 'wb') as f:
 		expected_seq = 0
 		skip_ack_counter = 0
 
@@ -387,10 +404,10 @@ def sr_server(drtp, file, test_case):
 					drtp.send_packet(ack_packet, data_addr)
 					break
 
-				# Writes data to the file if the received sequence number matches the expected sequence number
-				if seq_num == expected_seq:
-					f.write(data)
-					expected_seq += 1
+                # Writes data to the file if the received sequence number matches the expected sequence number
+                if seq_num == expected_seq:
+                    f.write(data)
+                    expected_seq += 1
 
 					# Skips sending an ACK if the test_case is 'skip_ack' and skip_ack_counter is 0
 					if test_case == 'skip_ack' and skip_ack_counter == 0:
@@ -425,7 +442,7 @@ def sr_client(drtp, file, window_size, test_case):
 	print("\nSelective Repeat client started.")
  
 	# Opening file in read binary mode
-	with open(file, 'rb') as f:
+	with open_file(file, 'rb') as f:
 		base = 0
 		next_seq_num = 0
 		packets_in_window = {}
@@ -470,8 +487,8 @@ def sr_client(drtp, file, window_size, test_case):
 						drtp.send_packet(duplicate_packet, (drtp.ip, drtp.port))
 						duplicate_packet = None
 
-			if not packets_in_window:
-				break
+            if not packets_in_window:
+                break
 
 			# Receives ACK packets and updates the base sequence number and window accordingly
 			try:
@@ -508,7 +525,6 @@ def sr_client(drtp, file, window_size, test_case):
 					packets_in_window[skip_seq] = skipped_packet
 					skipped_packet = None
 
-				# Retransmits packets that were not previously sent
 				print("\nTimeout occurred.")
 				for seq_num in sorted(packets_in_window.keys()):
 					packet = packets_in_window[seq_num]
@@ -516,47 +532,31 @@ def sr_client(drtp, file, window_size, test_case):
 						drtp.send_packet(packet, (drtp.ip, drtp.port))
 						print(f"Resending packet with sequence number: {seq_num}")
 
-		# Sends a packet with the FIN flag set after the file data has been sent
-		print("\nSending FIN packet.")
-		fin_packet = drtp.create_packet(next_seq_num, 0, drtp.FIN, 0, b'')
-		drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
+        # Sends a packet with the FIN flag set after the file data has been sent
+        print("\nSending FIN packet.")
+        fin_packet = drtp.create_packet(next_seq_num, 0, drtp.FIN, 0, b'')
+        drtp.send_packet(fin_packet, (drtp.ip, drtp.port))
 
 
 if __name__ == '__main__':
-    # Argument parser including all the available flags
 	parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
 	parser.add_argument('-s', '--server', action='store_true', help='Run as server')
 	parser.add_argument('-c', '--client', action='store_true', help='Run as client')
+	parser.add_argument('-I', '--remote_ip', default='127.0.0.1', help='Remote server IP address')
 	parser.add_argument('-i', '--ip', default='127.0.0.1', help='Remote server IP address')
 	parser.add_argument('-p', '--port', type=int, default=8080, help='Server port number')
+	parser.add_argument('-b', '--bind', default='127.0.0.1', type=str, help='Local IP address')
 	parser.add_argument('-f', '--file_name', type=str, help='File name to transfer')
-	parser.add_argument('-r', '--reliability_func', default='stop-and-wait',
+	parser.add_argument('-r', '--reliability_func', choices=['stop-and-wait', 'gbn', 'sr'], default='stop-and-wait',
 						help='Reliability function to use (default: stop_and_wait)')
 	parser.add_argument('-w', '--window_size', default=5, type=int, help="Size of the sliding window")
 	parser.add_argument('-t', '--test_case', type=str, default=None, help='Test case to run (e.g., skip_ack)')
 
 	args = parser.parse_args()
- 
-	# Error message for port out of range
-	if args.port not in range(1024, 65536):
-		print('Port out of range error: port must be between 1024 and 65536!')
-		sys.exit(1)
-  
-	# Error message for invalid reliability function
-	if args.reliability_func not in ['stop-and-wait', 'gbn', 'sr']:
-		print('Invalid reliability function: invalid reliability function. Choose between stop-and-wait, gbn or sr!')
-		sys.exit(1)
-  
-	# Error message for invalid test case
-	if args.test_case not in ['skip_ack', 'skip_seq', 'duplicate']:
-		print('Invalid test case: invalid test case. Choose between skip_ack, skip_seq and duplicate!')
-		sys.exit(1)
-  
-	# Runs either in client or server, otherwise an error is printed
+
 	if args.server:
 		server(args.ip, args.port, args.file_name, args.reliability_func, args.test_case)
 	elif args.client:
 		client(args.ip, args.port, args.file_name, args.reliability_func, args.window_size, args.test_case)
 	else:
-		print('Error: must be in either client(-c) or server(-s) mode!')
-		sys.exit(1)
+		parser.print_help()
