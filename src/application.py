@@ -541,6 +541,7 @@ def sr_client(drtp, file, window_size, test_case):
 
 
 if __name__ == '__main__':
+    # Parsing all the available flags to an argument parser
 	parser = argparse.ArgumentParser(description='Simple file transfer application using DRTP protocol')
 	parser.add_argument('-s', '--server', action='store_true', help='Run as server')
 	parser.add_argument('-c', '--client', action='store_true', help='Run as client')
@@ -554,18 +555,22 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
  
+	# Error message for port out of range
 	if args.port not in range(1024, 65536):
 		print('Port out of range: port must be between 1024 and 65536!')
 		sys.exit(1)
   
+	# Error message for invalid reliability function
 	if args.reliability_func not in ['stop-and-wait', 'gbn', 'sr']:
 		print('Invalid reliability function: choose between stop-and-wait, gbn or sr!')
 		sys.exit(1)
   
+	# Error message for invalid test case
 	if args.test_case is not None and args.test_case not in ['skip_ack', 'skip_seq', 'duplicate']:
 		print('No such test case: choose between skip_ack, skip_seq or duplicate!')
 		sys.exit(1)
 
+	# Runs eiter server or client, otherwise an error message is shown
 	if args.server:
 		server(args.ip, args.port, args.file_name, args.reliability_func, args.test_case)
 	elif args.client:
