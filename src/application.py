@@ -6,7 +6,7 @@ import os
 import sys
 
 # Description:
-	# creates a server socket using UDP and utilizes DRTP for reliable data transfer
+# creates a server socket using UDP and utilizes DRTP for reliable data transfer
 # establishes a connection with the client before selecting and running a specified reliability function
 # Arguments:
 # ip: holds the ip address for the server
@@ -83,14 +83,16 @@ def client(ip, port, file_name, reliability_func, window_size, test_case):
 	print("\nFIN-ACK received. Closing connection.")
 	client_drtp.close()															# Closing the connection upon receiving FIN
  
- # Helper function for error handling related to file
+# Helper function for error handling related to file
 def open_file(file_path, mode):
 	try:
 		return open(file_path, mode)
 	except FileNotFoundError:
-		print(f"File not found: {file_path}")
+		print(f"\nFile not found: {file_path}")
+		sys.exit(1)
 	except PermissionError:
-		print(f"Permission denied for file: {file_path}")
+		print(f"\nPermission denied for file: {file_path}")
+		sys.exit(1)
 
 # Description:
 # Implements a stop-and-wait server for receiving a file over a reliable transport protocol
@@ -280,7 +282,7 @@ def gbn_client(drtp, file, window_size, test_case):
 	print("\nGo-Back-N client started.")
  
 	# Opening file in read binary mode
-	with open(file, 'rb') as f:
+	with open_file(file, 'rb') as f:
 		base = 0
 		next_seq_num = 0
 		packets_in_window = {}
