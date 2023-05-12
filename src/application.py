@@ -110,7 +110,7 @@ def stop_and_wait_server(drtp, file, test_case):
 		print("Receiving data...\n")
 		while True:
 			try:
-				drtp.socket.settimeout(0.5)												# Sets a timeout of 50ms
+				drtp.socket.settimeout(0.5)												# Sets a timeout of 500ms
 				data_packet, data_addr = drtp.receive_packet()							# Receives packet from client
 				seq_num, _, flags, _, data = drtp.parse_packet(data_packet)				# Parses the packet and stores the received values
 
@@ -187,7 +187,7 @@ def stop_and_wait_client(drtp, file, test_case):
 			while not ack_received:												# Waits for ACK as long as the packet is not already ACKed
 				try:
 					send_time = time.time()
-					drtp.socket.settimeout(0.5) 								# Initial timeout value to 50ms
+					drtp.socket.settimeout(0.5) 								# Initial timeout value to 500ms
 					ack_packet, ack_addr = drtp.receive_packet()				# Receives ACK packet from server
 					recv_time = time.time()
 					_, _, flags, _, _ = drtp.parse_packet(ack_packet)			# Parsing the ACK packet
@@ -333,7 +333,7 @@ def gbn_client(drtp, file, window_size, test_case):
 			try:
 				send_time = time.time()
 				
-				drtp.socket.settimeout(0.5)							# Setting a timeout of 50ms
+				drtp.socket.settimeout(0.5)							# Setting a timeout of 500ms
 				ack_packet, ack_addr = drtp.receive_packet()		# receiveing packet from server
 	
 				recv_time = time.time()				
@@ -395,7 +395,7 @@ def sr_server(drtp, file, test_case):
 		print("Receiving data...\n")
 		while True:
 			try:
-				drtp.socket.settimeout(0.5)											# Setting a timeout of 50ms
+				drtp.socket.settimeout(0.5)											# Setting a timeout of 500ms
 				data_packet, data_addr = drtp.receive_packet()						# Receiving packet from client
 				seq_num, _, flags, _, data = drtp.parse_packet(data_packet)			# Parsing the received packet
 
@@ -414,7 +414,7 @@ def sr_server(drtp, file, test_case):
 					# Skips sending an ACK if the test_case is 'skip_ack' and skip_ack_counter is 0
 					if test_case == 'skip_ack' and skip_ack_counter == 0:
 						# Adds a sleep to skip an ack and increases the counter
-						time.sleep(0.5)
+						time.sleep(0.6)
 						skip_ack_counter += 1
 						print(f"Skip ACK triggered at sequence number {seq_num} \n")
 					else:
@@ -495,7 +495,7 @@ def sr_client(drtp, file, window_size, test_case):
 			# Receives ACK packets and updates the base sequence number and window accordingly
 			try:
 				send_time = time.time()											# Time before receiveing ACK packet
-				drtp.socket.settimeout(0.5)										# Setting a timeout of 50ms
+				drtp.socket.settimeout(0.5)										# Setting a timeout of 500ms
 				ack_packet, ack_addr = drtp.receive_packet()					# Receiving ACK from server
 				recv_time = time.time()											# Time after receiving ACK packet
 				seq_num, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)	# Parsing the packet received
