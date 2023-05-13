@@ -72,7 +72,7 @@ def client(ip, port, file_name, reliability_func, window_size, test_case):
 	end_time = time.time()
 	elapsed_time = end_time - start_time										# Finds the elapsed time
 
-	file_size = (os.path.getsize(file_name) * 8) / 1000000  					# Finds the size of the file in MB
+	file_size = (os.path.getsize(file_name) * 8) / 1000000  					# Finds the size of the file in Mb
 	throughput = file_size / elapsed_time 											  	
  
 	# Printing the statistics
@@ -208,7 +208,7 @@ def stop_and_wait_client(drtp, file, test_case):
 						# Calculate the average RTT and set the timeout to 4RTTs
 						avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
 						timeout = 4 * avg_rtt
-						drtp.socket.settimeout(timeout)
+						#drtp.socket.settimeout(timeout)
 
 				except socket.timeout:
 					# Handles a timeout and resends the packet
@@ -361,7 +361,7 @@ def gbn_client(drtp, file, window_size, test_case):
 				# Calculate the average RTT and set the timeout to 4RTTs
 				avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
 				timeout = 4 * avg_rtt
-				drtp.socket.settimeout(timeout)
+				#drtp.socket.settimeout(timeout)
 				
 			except socket.timeout:
 
@@ -529,7 +529,7 @@ def sr_client(drtp, file, window_size, test_case):
 				# Calculates the average RTT and set the timeout to 4RTTs
 				avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
 				timeout = 4 * avg_rtt
-				drtp.socket.settimeout(timeout)
+				#drtp.socket.settimeout(timeout)
 				
 			except socket.timeout:
 	

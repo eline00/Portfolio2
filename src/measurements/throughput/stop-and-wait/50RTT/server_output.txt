@@ -1,0 +1,13 @@
+-----------------------------------------------
+A server is listening on port 8080
+-----------------------------------------------
+
+Received SYN packet from the client
+SYN-ACK packet sent to ('10.0.0.1', 34187)
+
+Stop-and-wait server started.
+Receiving data...
+
+Out-of-order packet received: 2
+
+FIN flag received. Sending FIN-ACK
