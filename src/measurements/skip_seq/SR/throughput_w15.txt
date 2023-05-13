@@ -1,0 +1,34 @@
+
+Sending SYN from the client. Waiting for SYN-ACK.
+Received SYN-ACK packet from the server
+
+Selective Repeat client started.
+Transmitting data...
+
+Skipping packet with sequence number: 0
+Resending the previously skipped packet with seq: 0
+
+Timeout occurred.
+Resending packet with sequence number: 0
+Resending packet with sequence number: 1
+Resending packet with sequence number: 2
+Resending packet with sequence number: 3
+Resending packet with sequence number: 4
+Resending packet with sequence number: 5
+Resending packet with sequence number: 6
+Resending packet with sequence number: 7
+Resending packet with sequence number: 8
+Resending packet with sequence number: 9
+Resending packet with sequence number: 10
+Resending packet with sequence number: 11
+Resending packet with sequence number: 12
+Resending packet with sequence number: 13
+Resending packet with sequence number: 14
+
+Sending FIN packet.
+
+Elapsed Time: 4.73 s
+Transferred data: 26.09 Mb
+Throughput: 5.51 Mbps
+
+FIN-ACK received. Closing connection.

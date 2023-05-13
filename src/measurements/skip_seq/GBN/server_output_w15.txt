@@ -1,0 +1,30 @@
+-----------------------------------------------
+A server is listening on port 8080
+-----------------------------------------------
+
+Received SYN packet from the client
+SYN-ACK packet sent to ('10.0.0.1', 36780)
+
+Go-Back-N server started.
+Receiveing data...
+
+Out-of-order packet received: 2
+Out-of-order packet received: 5
+Out-of-order packet received: 6
+Out-of-order packet received: 7
+Out-of-order packet received: 8
+Out-of-order packet received: 9
+Out-of-order packet received: 10
+Out-of-order packet received: 11
+Out-of-order packet received: 12
+Out-of-order packet received: 13
+Out-of-order packet received: 14
+Out-of-order packet received: 15
+Out-of-order packet received: 16
+Out-of-order packet received: 17
+Out-of-order packet received: 18
+
+Timeout occurred on the server.
+Duplicate packet received: 4
+
+FIN flag received.
