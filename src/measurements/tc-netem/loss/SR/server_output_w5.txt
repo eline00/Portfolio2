@@ -1,0 +1,153 @@
+-----------------------------------------------
+A server is listening on port 8080
+-----------------------------------------------
+
+Received SYN packet from the client
+SYN-ACK packet sent to ('10.0.0.1', 47540)
+
+Selective Repeat server started.
+Receiving data...
+
+Discarding duplicate or out-of-order packet with sequence number: 2
+Discarding duplicate or out-of-order packet with sequence number: 238
+Discarding duplicate or out-of-order packet with sequence number: 239
+Discarding duplicate or out-of-order packet with sequence number: 241
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 361
+Discarding duplicate or out-of-order packet with sequence number: 362
+Discarding duplicate or out-of-order packet with sequence number: 363
+Discarding duplicate or out-of-order packet with sequence number: 364
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 397
+Discarding duplicate or out-of-order packet with sequence number: 398
+Discarding duplicate or out-of-order packet with sequence number: 399
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 646
+Discarding duplicate or out-of-order packet with sequence number: 647
+Discarding duplicate or out-of-order packet with sequence number: 648
+Discarding duplicate or out-of-order packet with sequence number: 649
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 703
+Discarding duplicate or out-of-order packet with sequence number: 704
+Discarding duplicate or out-of-order packet with sequence number: 705
+Discarding duplicate or out-of-order packet with sequence number: 706
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 750
+Discarding duplicate or out-of-order packet with sequence number: 751
+Discarding duplicate or out-of-order packet with sequence number: 752
+Discarding duplicate or out-of-order packet with sequence number: 753
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 790
+Discarding duplicate or out-of-order packet with sequence number: 791
+Discarding duplicate or out-of-order packet with sequence number: 792
+Discarding duplicate or out-of-order packet with sequence number: 793
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 841
+Discarding duplicate or out-of-order packet with sequence number: 842
+Discarding duplicate or out-of-order packet with sequence number: 843
+Discarding duplicate or out-of-order packet with sequence number: 844
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 870
+Discarding duplicate or out-of-order packet with sequence number: 871
+Discarding duplicate or out-of-order packet with sequence number: 872
+Discarding duplicate or out-of-order packet with sequence number: 873
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 932
+Discarding duplicate or out-of-order packet with sequence number: 933
+Discarding duplicate or out-of-order packet with sequence number: 934
+Discarding duplicate or out-of-order packet with sequence number: 935
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1113
+Discarding duplicate or out-of-order packet with sequence number: 1115
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1130
+Discarding duplicate or out-of-order packet with sequence number: 1131
+Discarding duplicate or out-of-order packet with sequence number: 1132
+Discarding duplicate or out-of-order packet with sequence number: 1133
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1243
+Discarding duplicate or out-of-order packet with sequence number: 1244
+Discarding duplicate or out-of-order packet with sequence number: 1245
+Discarding duplicate or out-of-order packet with sequence number: 1246
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1326
+Discarding duplicate or out-of-order packet with sequence number: 1327
+Discarding duplicate or out-of-order packet with sequence number: 1328
+Discarding duplicate or out-of-order packet with sequence number: 1329
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1400
+Discarding duplicate or out-of-order packet with sequence number: 1401
+Discarding duplicate or out-of-order packet with sequence number: 1402
+Discarding duplicate or out-of-order packet with sequence number: 1403
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1534
+Discarding duplicate or out-of-order packet with sequence number: 1535
+Discarding duplicate or out-of-order packet with sequence number: 1536
+Discarding duplicate or out-of-order packet with sequence number: 1537
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1575
+Discarding duplicate or out-of-order packet with sequence number: 1576
+Discarding duplicate or out-of-order packet with sequence number: 1577
+Discarding duplicate or out-of-order packet with sequence number: 1578
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1730
+Discarding duplicate or out-of-order packet with sequence number: 1731
+Discarding duplicate or out-of-order packet with sequence number: 1732
+Discarding duplicate or out-of-order packet with sequence number: 1733
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1769
+Discarding duplicate or out-of-order packet with sequence number: 1770
+Discarding duplicate or out-of-order packet with sequence number: 1771
+Discarding duplicate or out-of-order packet with sequence number: 1772
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1828
+Discarding duplicate or out-of-order packet with sequence number: 1829
+Discarding duplicate or out-of-order packet with sequence number: 1830
+Discarding duplicate or out-of-order packet with sequence number: 1831
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1937
+Discarding duplicate or out-of-order packet with sequence number: 1938
+Discarding duplicate or out-of-order packet with sequence number: 1939
+Discarding duplicate or out-of-order packet with sequence number: 1940
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 1982
+Discarding duplicate or out-of-order packet with sequence number: 1983
+Discarding duplicate or out-of-order packet with sequence number: 1984
+Discarding duplicate or out-of-order packet with sequence number: 1985
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 2069
+Discarding duplicate or out-of-order packet with sequence number: 2070
+Discarding duplicate or out-of-order packet with sequence number: 2071
+Discarding duplicate or out-of-order packet with sequence number: 2072
+
+Timeout occurred on the server.
+Discarding duplicate or out-of-order packet with sequence number: 2099
+Discarding duplicate or out-of-order packet with sequence number: 2100
+Discarding duplicate or out-of-order packet with sequence number: 2101
+Discarding duplicate or out-of-order packet with sequence number: 2102
+
+Timeout occurred on the server.
+
+FIN flag received. Sending FIN-ACK
