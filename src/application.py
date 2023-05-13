@@ -137,7 +137,11 @@ def stop_and_wait_server(drtp, file, test_case):
 						drtp.send_packet(ack_packet, data_addr)
 				else:
 					# Sends an ACK for the last correctly received packet if the received sequence number does not match the expected one
-					print(f"Discarding duplicate or out-of-order packet with sequence number: {seq_num}")
+					if seq_num < expected_seq:
+						print(f"Duplicate packet received: {seq_num}")
+
+					elif seq_num > expected_seq:
+						print(f"Out-of-order packet received: {seq_num}")
 					ack_packet = drtp.create_packet(0, expected_seq, 0x10, 0, b'')
 					drtp.send_packet(ack_packet, data_addr)
 
@@ -261,7 +265,11 @@ def gbn_server(drtp, file, test_case):
 
 				else:
 					# Sends an ACK for the last correctly received packet if the received packet is out of order or a duplicate
-					print(f"Discarding duplicate or out-of-order packet with sequence number: {seq_num}")
+					if seq_num < expected_seq:
+						print(f"Duplicate packet received: {seq_num}")
+
+					elif seq_num > expected_seq:
+						print(f"Out-of-order packet received: {seq_num}")
 					ack_packet = drtp.create_packet(0, expected_seq, 0x10, 0, b'')
 					drtp.send_packet(ack_packet, data_addr)
 	 
@@ -423,7 +431,12 @@ def sr_server(drtp, file, test_case):
 						drtp.send_packet(ack_packet, data_addr)
 				else:
 					# Re-sends ACK packet for the previous packet if the received sequence number does not match
-					print(f"Discarding duplicate or out-of-order packet with sequence number: {seq_num}")
+					if seq_num < expected_seq:
+						print(f"Duplicate packet received: {seq_num}")
+
+					elif seq_num > expected_seq:
+						print(f"Out-of-order packet received: {seq_num}")
+      
 					ack_packet = drtp.create_packet(0, expected_seq, 0x10, 0, b'')
 					drtp.send_packet(ack_packet, data_addr)
 
