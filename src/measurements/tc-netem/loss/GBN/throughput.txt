@@ -1,0 +1,126 @@
+
+Sending SYN from the client. Waiting for SYN-ACK.
+Received SYN-ACK packet from the server
+
+Go-Back-N client started.
+Transmitting data...
+
+Timeout occurred.
+Resending packet with sequence number: 172
+Resending packet with sequence number: 173
+Resending packet with sequence number: 174
+Resending packet with sequence number: 175
+Resending packet with sequence number: 176
+
+Timeout occurred.
+Resending packet with sequence number: 326
+Resending packet with sequence number: 327
+Resending packet with sequence number: 328
+Resending packet with sequence number: 329
+Resending packet with sequence number: 330
+
+Timeout occurred.
+Resending packet with sequence number: 432
+Resending packet with sequence number: 433
+Resending packet with sequence number: 434
+Resending packet with sequence number: 435
+Resending packet with sequence number: 436
+
+Timeout occurred.
+Resending packet with sequence number: 728
+Resending packet with sequence number: 729
+Resending packet with sequence number: 730
+Resending packet with sequence number: 731
+Resending packet with sequence number: 732
+
+Timeout occurred.
+Resending packet with sequence number: 792
+Resending packet with sequence number: 793
+Resending packet with sequence number: 794
+Resending packet with sequence number: 795
+Resending packet with sequence number: 796
+
+Timeout occurred.
+Resending packet with sequence number: 1008
+Resending packet with sequence number: 1009
+Resending packet with sequence number: 1010
+Resending packet with sequence number: 1011
+Resending packet with sequence number: 1012
+
+Timeout occurred.
+Resending packet with sequence number: 1134
+Resending packet with sequence number: 1135
+Resending packet with sequence number: 1136
+Resending packet with sequence number: 1137
+Resending packet with sequence number: 1138
+
+Timeout occurred.
+Resending packet with sequence number: 1217
+Resending packet with sequence number: 1218
+Resending packet with sequence number: 1219
+Resending packet with sequence number: 1220
+Resending packet with sequence number: 1221
+
+Timeout occurred.
+Resending packet with sequence number: 1402
+Resending packet with sequence number: 1403
+Resending packet with sequence number: 1404
+Resending packet with sequence number: 1405
+Resending packet with sequence number: 1406
+
+Timeout occurred.
+Resending packet with sequence number: 1468
+Resending packet with sequence number: 1469
+Resending packet with sequence number: 1470
+Resending packet with sequence number: 1471
+Resending packet with sequence number: 1472
+
+Timeout occurred.
+Resending packet with sequence number: 1491
+Resending packet with sequence number: 1492
+Resending packet with sequence number: 1493
+Resending packet with sequence number: 1494
+Resending packet with sequence number: 1495
+
+Timeout occurred.
+Resending packet with sequence number: 1767
+Resending packet with sequence number: 1768
+Resending packet with sequence number: 1769
+Resending packet with sequence number: 1770
+Resending packet with sequence number: 1771
+
+Timeout occurred.
+Resending packet with sequence number: 1809
+Resending packet with sequence number: 1810
+Resending packet with sequence number: 1811
+Resending packet with sequence number: 1812
+Resending packet with sequence number: 1813
+
+Timeout occurred.
+Resending packet with sequence number: 1811
+Resending packet with sequence number: 1812
+Resending packet with sequence number: 1813
+Resending packet with sequence number: 1814
+Resending packet with sequence number: 1815
+
+Timeout occurred.
+Resending packet with sequence number: 1833
+Resending packet with sequence number: 1834
+Resending packet with sequence number: 1835
+Resending packet with sequence number: 1836
+Resending packet with sequence number: 1837
+
+Timeout occurred.
+Resending packet with sequence number: 2070
+Resending packet with sequence number: 2071
+Resending packet with sequence number: 2072
+Resending packet with sequence number: 2073
+Resending packet with sequence number: 2074
+
+Sending FIN packet.
+
+Elapsed Time: 25.61 s
+Transferred data: 26.09 Mb
+Throughput: 1.02 Mbps
+
+FIN-ACK received. Closing connection.

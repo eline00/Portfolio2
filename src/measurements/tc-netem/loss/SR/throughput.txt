@@ -1,0 +1,147 @@
+
+Sending SYN from the client. Waiting for SYN-ACK.
+Received SYN-ACK packet from the server
+
+Selective Repeat client started.
+Transmitting data...
+
+Timeout occurred.
+Resending packet with sequence number: 4
+Resending packet with sequence number: 5
+Resending packet with sequence number: 6
+Resending packet with sequence number: 7
+Resending packet with sequence number: 8
+
+Timeout occurred.
+Resending packet with sequence number: 174
+Resending packet with sequence number: 175
+Resending packet with sequence number: 176
+Resending packet with sequence number: 177
+Resending packet with sequence number: 178
+
+Timeout occurred.
+Resending packet with sequence number: 295
+Resending packet with sequence number: 296
+Resending packet with sequence number: 297
+Resending packet with sequence number: 298
+Resending packet with sequence number: 299
+
+Timeout occurred.
+Resending packet with sequence number: 306
+Resending packet with sequence number: 307
+Resending packet with sequence number: 308
+Resending packet with sequence number: 309
+Resending packet with sequence number: 310
+
+Timeout occurred.
+Resending packet with sequence number: 362
+Resending packet with sequence number: 363
+Resending packet with sequence number: 364
+Resending packet with sequence number: 365
+Resending packet with sequence number: 366
+
+Timeout occurred.
+Resending packet with sequence number: 688
+Resending packet with sequence number: 689
+Resending packet with sequence number: 690
+Resending packet with sequence number: 691
+Resending packet with sequence number: 692
+
+Timeout occurred.
+Resending packet with sequence number: 715
+Resending packet with sequence number: 716
+Resending packet with sequence number: 717
+Resending packet with sequence number: 718
+Resending packet with sequence number: 719
+
+Timeout occurred.
+Resending packet with sequence number: 876
+Resending packet with sequence number: 877
+Resending packet with sequence number: 878
+Resending packet with sequence number: 879
+Resending packet with sequence number: 880
+
+Timeout occurred.
+Resending packet with sequence number: 921
+Resending packet with sequence number: 922
+Resending packet with sequence number: 923
+Resending packet with sequence number: 924
+Resending packet with sequence number: 925
+
+Timeout occurred.
+Resending packet with sequence number: 1042
+Resending packet with sequence number: 1043
+Resending packet with sequence number: 1044
+Resending packet with sequence number: 1045
+Resending packet with sequence number: 1046
+
+Timeout occurred.
+Resending packet with sequence number: 1046
+Resending packet with sequence number: 1047
+Resending packet with sequence number: 1048
+Resending packet with sequence number: 1049
+Resending packet with sequence number: 1050
+
+Timeout occurred.
+Resending packet with sequence number: 1115
+Resending packet with sequence number: 1116
+Resending packet with sequence number: 1117
+Resending packet with sequence number: 1118
+Resending packet with sequence number: 1119
+
+Timeout occurred.
+Resending packet with sequence number: 1425
+Resending packet with sequence number: 1426
+Resending packet with sequence number: 1427
+Resending packet with sequence number: 1428
+Resending packet with sequence number: 1429
+
+Timeout occurred.
+Resending packet with sequence number: 1557
+Resending packet with sequence number: 1558
+Resending packet with sequence number: 1559
+Resending packet with sequence number: 1560
+Resending packet with sequence number: 1561
+
+Timeout occurred.
+Resending packet with sequence number: 1643
+Resending packet with sequence number: 1644
+Resending packet with sequence number: 1645
+Resending packet with sequence number: 1646
+Resending packet with sequence number: 1647
+
+Timeout occurred.
+Resending packet with sequence number: 1714
+Resending packet with sequence number: 1715
+Resending packet with sequence number: 1716
+Resending packet with sequence number: 1717
+Resending packet with sequence number: 1718
+
+Timeout occurred.
+Resending packet with sequence number: 1793
+Resending packet with sequence number: 1794
+Resending packet with sequence number: 1795
+Resending packet with sequence number: 1796
+Resending packet with sequence number: 1797
+
+Timeout occurred.
+Resending packet with sequence number: 1797
+Resending packet with sequence number: 1798
+Resending packet with sequence number: 1799
+Resending packet with sequence number: 1800
+Resending packet with sequence number: 1801
+
+Timeout occurred.
+Resending packet with sequence number: 2171
+Resending packet with sequence number: 2172
+Resending packet with sequence number: 2173
+Resending packet with sequence number: 2174
+Resending packet with sequence number: 2175
+
+Sending FIN packet.
+
+Elapsed Time: 22.90 s
+Transferred data: 26.09 Mb
+Throughput: 1.14 Mbps
+
+FIN-ACK received. Closing connection.
