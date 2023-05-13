@@ -1,0 +1,21 @@
+
+Sending SYN from the client. Waiting for SYN-ACK.
+Received SYN-ACK packet from the server
+
+Selective Repeat client started.
+Transmitting data...
+
+Timeout occurred.
+Resending packet with sequence number: 0
+Resending packet with sequence number: 1
+Resending packet with sequence number: 2
+Resending packet with sequence number: 3
+Resending packet with sequence number: 4
+
+Sending FIN packet.
+
+Elapsed Time: 13.66 s
+Transferred data: 26.09 Mb
+Throughput: 1.91 Mbps
+
+FIN-ACK received. Closing connection.

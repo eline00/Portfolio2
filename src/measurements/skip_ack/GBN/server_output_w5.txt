@@ -3,10 +3,10 @@ A server is listening on port 8080
 -----------------------------------------------
 
 Received SYN packet from the client
-SYN-ACK packet sent to ('10.0.0.1', 47698)
+SYN-ACK packet sent to ('10.0.0.1', 60439)
 
-Selective Repeat server started.
-Receiving data...
+Go-Back-N server started.
+Receiveing data...
 
 Out-of-order packet received: 2
 Skip ACK triggered at sequence number 0 
@@ -17,4 +17,4 @@ Duplicate packet received: 2
 Duplicate packet received: 3
 Duplicate packet received: 4
 
-FIN flag received. Sending FIN-ACK
+FIN flag received.

@@ -3,7 +3,7 @@ A server is listening on port 8080
 -----------------------------------------------
 
 Received SYN packet from the client
-SYN-ACK packet sent to ('10.0.0.1', 36408)
+SYN-ACK packet sent to ('10.0.0.1', 44909)
 
 Stop-and-wait server started.
 Receiving data...
