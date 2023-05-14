@@ -432,15 +432,14 @@ def sr_server(drtp, file, test_case):
 						while expected_seq in received:
 							data = received.pop(expected_seq)
 							f.write(data)
-							print(data)
 							expected_seq += 1
 		
 					elif seq_num > expected_seq:
-						print(f"Out-of-order packet received: {seq_num}")
+						print(f"Out-of-order packet received: {expected_seq}")
 						received[seq_num] = data
 						drtp.send_packet(ack_packet, data_addr)
 					else:
-						print(f"Duplicate packet received: {seq_num}")
+						print(f"Duplicate packet received: {expected_seq}")
 						drtp.send_packet(ack_packet, data_addr)	  
       
 

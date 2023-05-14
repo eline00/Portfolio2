@@ -81,7 +81,10 @@ class DRTP:
 				syn_ack_packet = self.create_packet(seq_num+1, ack_num+1, self.SYN | self.ACK, window, b'')		# Creats ACK packet for the SYN packet
 				self.send_packet(syn_ack_packet, addr)							# Sends ack for the syn packet
 				print(f"SYN-ACK packet sent to {addr}")  
+			if flags & self.ACK:
+				print(f"Received SYN-ACK-ACK.")
 				break
+					
 
 	# Description:
 	# Initiates a three way handshake with the server by sending a SYN packet to the server.
@@ -100,7 +103,7 @@ class DRTP:
 				packet, addr = self.receive_packet()							# Receiving packet from server
 				seq_num, ack_num, flags, window, _ = self.parse_packet(packet)	# Parsing the packet
 				if flags & self.SYN and flags & self.ACK and ack_num == syn_seq_num + 1:	# Checking if the packet is an ACK for the SYN packet
-					print("Received SYN-ACK packet from the server") 
+					print("Received SYN-ACK packet from the server. Seding SYN-ACK-ACK") 
 					ack_packet = self.create_packet(seq_num+1, ack_num, self.ACK, window, b'') 	# Create new ACK packet for the SYN-ACK packet
 					self.send_packet(ack_packet, (self.ip, self.port))			# Sending ACK back to the server upon receiving SYN-ACK
 					break
