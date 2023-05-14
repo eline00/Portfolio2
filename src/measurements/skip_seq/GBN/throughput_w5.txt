@@ -1,12 +1,11 @@
 
 Sending SYN from the client. Waiting for SYN-ACK.
-Received SYN-ACK packet from the server
+Received SYN-ACK packet from the server. Seding SYN-ACK-ACK
 
 Go-Back-N client started.
 Transmitting data...
 
 Skipping packet with sequence number: 4
-Resending the previously skipped packet with seq: 4
 
 Timeout occurred.
 Resending packet with sequence number: 4
@@ -17,8 +16,8 @@ Resending packet with sequence number: 8
 
 Sending FIN packet.
 
-Elapsed Time: 13.19 s
+Elapsed Time: 14.20 s
 Transferred data: 26.09 Mb
-Throughput: 1.98 Mbps
+Throughput: 1.84 Mbps
 
 FIN-ACK received. Closing connection.

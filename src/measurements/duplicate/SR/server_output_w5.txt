@@ -3,16 +3,12 @@ A server is listening on port 8080
 -----------------------------------------------
 
 Received SYN packet from the client
-SYN-ACK packet sent to ('10.0.0.1', 44698)
+SYN-ACK packet sent to ('10.0.0.1', 45140)
 Received SYN-ACK-ACK.
 
-Stop-and-wait server started.
+Selective Repeat server started.
 Receiving data...
 
-Skip ACK triggered at sequence number 0 
-
-
-Timeout occurred on the server
-Duplicate packet received: 0
+Duplicate packet received: 1
 
 FIN flag received. Sending FIN-ACK

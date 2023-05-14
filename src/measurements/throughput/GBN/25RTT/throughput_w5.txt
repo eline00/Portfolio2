@@ -1,14 +1,14 @@
 
 Sending SYN from the client. Waiting for SYN-ACK.
-Received SYN-ACK packet from the server
+Received SYN-ACK packet from the server. Seding SYN-ACK-ACK
 
 Go-Back-N client started.
 Transmitting data...
 
 Sending FIN packet.
 
-Elapsed Time: 13.67 s
+Elapsed Time: 12.15 s
 Transferred data: 26.09 Mb
-Throughput: 1.91 Mbps
+Throughput: 2.15 Mbps
 
 FIN-ACK received. Closing connection.

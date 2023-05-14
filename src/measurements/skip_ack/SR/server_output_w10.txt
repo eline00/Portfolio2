@@ -3,23 +3,25 @@ A server is listening on port 8080
 -----------------------------------------------
 
 Received SYN packet from the client
-SYN-ACK packet sent to ('10.0.0.1', 36484)
+SYN-ACK packet sent to ('10.0.0.1', 49154)
+Received SYN-ACK-ACK.
 
 Selective Repeat server started.
 Receiving data...
 
-Out-of-order packet received: 2
 Skip ACK triggered at sequence number 0 
 
-Duplicate packet received: 0
-Duplicate packet received: 1
-Duplicate packet received: 2
-Duplicate packet received: 3
-Duplicate packet received: 4
-Duplicate packet received: 5
-Duplicate packet received: 6
-Duplicate packet received: 7
-Duplicate packet received: 8
-Duplicate packet received: 9
+Out-of-order packet received: 1
+Out-of-order packet received: 2
+Out-of-order packet received: 3
+Out-of-order packet received: 4
+Out-of-order packet received: 5
+Out-of-order packet received: 6
+Out-of-order packet received: 7
+Out-of-order packet received: 8
+Out-of-order packet received: 9
+
+Timeout occurred on the server.
+Out-of-order packet received: 1366
 
 FIN flag received. Sending FIN-ACK

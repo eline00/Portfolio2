@@ -3,11 +3,11 @@ A server is listening on port 8080
 -----------------------------------------------
 
 Received SYN packet from the client
-SYN-ACK packet sent to ('10.0.0.1', 49788)
+SYN-ACK packet sent to ('10.0.0.1', 35505)
+Received SYN-ACK-ACK.
 
 Go-Back-N server started.
 Receiveing data...
 
-Out-of-order packet received: 2
 
 FIN flag received.
