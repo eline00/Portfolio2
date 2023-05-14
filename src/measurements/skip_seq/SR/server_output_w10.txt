@@ -1,0 +1,25 @@
+-----------------------------------------------
+A server is listening on port 8080
+-----------------------------------------------
+
+Received SYN packet from the client
+SYN-ACK packet sent to ('10.0.0.1', 59813)
+
+Selective Repeat server started.
+Receiving data...
+
+Out-of-order packet received: 2
+Out-of-order packet received: 1
+Out-of-order packet received: 2
+Out-of-order packet received: 3
+Out-of-order packet received: 4
+Out-of-order packet received: 5
+Out-of-order packet received: 6
+Out-of-order packet received: 7
+Out-of-order packet received: 8
+Out-of-order packet received: 9
+
+Timeout occurred on the server.
+Duplicate packet received: 0
+
+FIN flag received. Sending FIN-ACK
