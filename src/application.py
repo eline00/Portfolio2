@@ -104,7 +104,7 @@ def stop_and_wait_server(drtp, file, test_case):
 
 	print("\nStop-and-wait server started.")
 	with open_file(file, 'wb') as f:
-		expected_seq = 1																# Expects the first packet to have sequence number 0
+		expected_seq = 0																# Expects the first packet to have sequence number 0
 		skip_ack_counter = 0															# Initializing skip ack counter to 0
 
 		print("Receiving data...\n")
@@ -129,7 +129,6 @@ def stop_and_wait_server(drtp, file, test_case):
 					# Implements the 'skip_ack' test case by skipping an acknowledgment
 					if test_case == 'skip_ack' and skip_ack_counter == 0:
 						print(f"Skip ACK triggered at sequence number {seq_num} \n")
-						time.sleep(0.6)													# Adds a sleep to skip an ack
 						skip_ack_counter += 1											# Updates counter
 					else:
 						# Creating and sening ACK to the client
@@ -142,12 +141,13 @@ def stop_and_wait_server(drtp, file, test_case):
 
 					elif seq_num > expected_seq:
 						print(f"Out-of-order packet received: {seq_num}")
+      
 					ack_packet = drtp.create_packet(0, expected_seq, 0x10, 0, b'')
 					drtp.send_packet(ack_packet, data_addr)
 
 			except socket.timeout:
 				# Handles a timeout and continues to receive packets
-				print(f"\nTimeout occurred on the server. Did not receive packet: {expected_seq}")
+				print(f"\nTimeout occurred on the server")
 				continue
 
 # Description:
@@ -161,7 +161,7 @@ def stop_and_wait_client(drtp, file, test_case):
  
 	# Opening file in read binary mode
 	with open_file(file, 'rb') as f:
-		expected_seq = 1									# Expecting the first sequence number to be 0
+		expected_seq = 0									# Expecting the first sequence number to be 0
   
 		# Initializing variables for calculating RTT
 		rtt_sum = 0
@@ -213,7 +213,8 @@ def stop_and_wait_client(drtp, file, test_case):
 				except socket.timeout:
 					# Handles a timeout and resends the packet
 					print(f"\nTimeout occurred. Resending packet with sequence number: {expected_seq}")
-
+					drtp.send_packet(packet, (drtp.ip, drtp.port))
+					
 			expected_seq += 1					# Increasing the expected sequence number
 
 		# Sends a packet with the FIN flag set after the file data has been sent
@@ -233,7 +234,7 @@ def gbn_server(drtp, file, test_case):
  
 	# Opening the file in write binary mode
 	with open_file(file, 'wb') as f:
-		expected_seq = 1											# Expecting the sequence number to start at 0
+		expected_seq = 0											# Expecting the sequence number to start at 0
 		skip_ack_counter = 0										# Initializing the skip ack variable so that the first packet is skipped
   
 		print("Receiveing data...\n")
@@ -255,7 +256,7 @@ def gbn_server(drtp, file, test_case):
 
 					# Skips sending an ACK if the test_case is 'skip_ack' and skip_ack_counter is 0
 					if test_case == "skip_ack" and skip_ack_counter == 0:
-						time.sleep(0.6)
+						time.sleep(0.5)
 						skip_ack_counter += 1
 						print(f"Skip ACK triggered at sequence number {seq_num} \n")
 					else:
@@ -274,7 +275,7 @@ def gbn_server(drtp, file, test_case):
 					drtp.send_packet(ack_packet, data_addr)
 	 
 			except socket.timeout:
-				# Retransmitts the packet if no ack was received and a timeout occures
+				# Retransmitts the packet if no packet was received and a timeout occures
 				print("\nTimeout occurred on the server.")
 				continue
 
@@ -292,7 +293,7 @@ def gbn_client(drtp, file, window_size, test_case):
 	# Opening file in read binary mode
 	with open_file(file, 'rb') as f:
 		base = 0
-		next_seq_num = 1
+		next_seq_num = 0
 		packets_in_window = {}
 		received = {}
 
@@ -347,7 +348,7 @@ def gbn_client(drtp, file, window_size, test_case):
 				recv_time = time.time()				
 				_, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)		# Parsing the received packet
 
-				if flags & 0x10:									# Checks if teh received packet is an ACK
+				if flags & 0x10:									# Checks if the received packet is an ACK
 					for seq_num in range(base, ack_num):
 						if seq_num in packets_in_window:  			# Check if seq_num exists in the dictionary
 							packets_in_window.pop(seq_num)			# Removes acknowledged packet from window
@@ -374,9 +375,8 @@ def gbn_client(drtp, file, window_size, test_case):
 				print("\nTimeout occurred.")
 				for seq_num in sorted(packets_in_window.keys()):
 					packet = packets_in_window[seq_num]
-					if seq_num not in received:
-						drtp.send_packet(packet, (drtp.ip, drtp.port))
-						print(f"Resending packet with sequence number: {seq_num}")
+					drtp.send_packet(packet, (drtp.ip, drtp.port))
+					print(f"Resending packet with sequence number: {seq_num}")
 
 		# Sends a packet with the FIN flag set after the file data has been sent
 		print("\nSending FIN packet.")
@@ -417,11 +417,9 @@ def sr_server(drtp, file, test_case):
 	
 				# Skips sending an ACK if the test_case is 'skip_ack' and skip_ack_counter is 0
 				if test_case == 'skip_ack' and skip_ack_counter == 0:
-					# Adds a sleep to skip an ack and increases the counter
 					skip_ack_counter += 1
 					print(f"Skip ACK triggered at sequence number {seq_num} \n")
 				else:
-					
 					# Writes data to the file if the received sequence number matches the expected sequence number
 					if seq_num == expected_seq:
 						drtp.send_packet(ack_packet, data_addr)
@@ -435,14 +433,13 @@ def sr_server(drtp, file, test_case):
 							expected_seq += 1
 		
 					elif seq_num > expected_seq:
-						print(f"Out-of-order packet received: {expected_seq}")
+						print(f"Out-of-order packet received: {seq_num}")
 						received[seq_num] = data
 						drtp.send_packet(ack_packet, data_addr)
 					else:
-						print(f"Duplicate packet received: {expected_seq}")
+						print(f"Duplicate packet received: {seq_num}")
 						drtp.send_packet(ack_packet, data_addr)	  
       
-
 			except socket.timeout:
 				print("\nTimeout occurred on the server.")
 				continue
@@ -497,8 +494,8 @@ def sr_client(drtp, file, window_size, test_case):
 	
 				# Sending an old sequence number to test the handling of duplicate packets
 				if test_case == "duplicate" and next_seq_num == 2:
-						duplicate_packet = packets_in_window[next_seq_num - 1]
-						print(f"Sending duplicate packet with sequence number: {next_seq_num}")
+						duplicate_packet, sent = packets_in_window[next_seq_num - 1]
+						print(f"Sending duplicate packet with sequence number: {next_seq_num - 1}")
 						drtp.send_packet(duplicate_packet, (drtp.ip, drtp.port))
 						duplicate_packet = None
 
@@ -512,12 +509,10 @@ def sr_client(drtp, file, window_size, test_case):
 				ack_packet, ack_addr = drtp.receive_packet()					# Receiving ACK from server
 				recv_time = time.time()											# Time after receiving ACK packet
 				seq_num, ack_num, flags, _, _ = drtp.parse_packet(ack_packet)	# Parsing the packet received
-				#print(f"ACK packet receved for: {ack_num}")
 
 				if flags & 0x10:												# Cheking if the received packet is an ACK
-					packets_in_window.pop(ack_num, None)    					# Removing acknowledged packet from window
+					packets_in_window.pop(ack_num, None)    							# Removing acknowledged packet from window
 					received[ack_num] = True
-					#print(received.keys())
 					while base in received:    									# Move the base if the packet is acknowledged
 						base += 1
 				
@@ -534,13 +529,11 @@ def sr_client(drtp, file, window_size, test_case):
 			except socket.timeout:
 				print("\nTimeout occurred.")
 				# Retransmits the skipped packet aftes timeout occurs
-    
 				for seq_num in packets_in_window.keys():
 					packet, sent = packets_in_window[seq_num]
-					if not sent:
+					if not sent or seq_num not in received:
 						drtp.send_packet(packet, (drtp.ip, drtp.port))
 						print(f"Resending packet with sequence number: {seq_num}")
-						packets_in_window[seq_num] = (packet, True)
 						
 
 		# Sends a packet with the FIN flag set after the file data has been sent
