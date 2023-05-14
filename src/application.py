@@ -166,9 +166,6 @@ def stop_and_wait_client(drtp, file, test_case):
 		# Initializing variables for calculating RTT
 		rtt_sum = 0
 		packet_count = 0
-  
-		# Variable for initializing duplicate packets
-		duplicate_packet = None
 
 		print("Transmitting data...")
 		while True:
@@ -208,7 +205,7 @@ def stop_and_wait_client(drtp, file, test_case):
 						# Calculate the average RTT and set the timeout to 4RTTs
 						avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
 						timeout = 4 * avg_rtt
-						#drtp.socket.settimeout(timeout)
+						drtp.socket.settimeout(timeout)
 
 				except socket.timeout:
 					# Handles a timeout and resends the packet
@@ -362,7 +359,7 @@ def gbn_client(drtp, file, window_size, test_case):
 				# Calculate the average RTT and set the timeout to 4RTTs
 				avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
 				timeout = 4 * avg_rtt
-				#drtp.socket.settimeout(timeout)
+				drtp.socket.settimeout(timeout)
 				
 			except socket.timeout:
 
@@ -524,7 +521,7 @@ def sr_client(drtp, file, window_size, test_case):
 				# Calculates the average RTT and set the timeout to 4RTTs
 				avg_rtt = rtt_sum / packet_count if packet_count > 0 else 0.5
 				timeout = 4 * avg_rtt
-				#drtp.socket.settimeout(timeout)
+				drtp.socket.settimeout(timeout)
 				
 			except socket.timeout:
 				print("\nTimeout occurred.")
