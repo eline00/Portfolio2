@@ -7,8 +7,8 @@ Transmitting data...
 
 Sending FIN packet.
 
-Elapsed Time: 12.72 s
+Elapsed Time: 12.41 s
 Transferred data: 26.09 Mb
-Throughput: 2.05 Mbps
+Throughput: 2.10 Mbps
 
 FIN-ACK received. Closing connection.
