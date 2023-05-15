@@ -268,17 +268,17 @@ def gbn_server(drtp, file, test_case):
 
                 else:
                     # Sends an ACK for the last correctly received packet if the received packet is out of order or a duplicate
-                    # if seq_num < expected_seq:
-                    # print(f"Duplicate packet received: {seq_num}")
+                    if seq_num < expected_seq:
+                        print(f"Duplicate packet received: {seq_num}")
 
-                    # elif seq_num > expected_seq:
-                    # print(f"Out-of-order packet received: {seq_num}")
+                    elif seq_num > expected_seq:
+                        print(f"Out-of-order packet received: {seq_num}")
                     ack_packet = drtp.create_packet(0, expected_seq, 0x10, 0, b'')
                     drtp.send_packet(ack_packet, data_addr)
 
             except socket.timeout:
                 # Retransmitts the packet if no packet was received and a timeout occures
-                # print("\nTimeout occurred on the server.")
+                print("\nTimeout occurred on the server.")
                 continue
 
 
@@ -375,11 +375,11 @@ def gbn_client(drtp, file, window_size, test_case):
                     skipped_packet = None
 
                 # Resends all packets in the window in case of timeout
-                # print("\nTimeout occurred.")
+                print("\nTimeout occurred.")
                 for seq_num in sorted(packets_in_window.keys()):
                     packet = packets_in_window[seq_num]
                     drtp.send_packet(packet, (drtp.ip, drtp.port))
-                # print(f"Resending packet with sequence number: {seq_num}")
+                    print(f"Resending packet with sequence number: {seq_num}")
 
         # Sends a packet with the FIN flag set after the file data has been sent
         print("\nSending FIN packet.")
@@ -437,15 +437,15 @@ def sr_server(drtp, file, test_case):
                             expected_seq += 1
 
                     elif seq_num > expected_seq:
-                        # print(f"Out-of-order packet received: {seq_num}")
+                        print(f"Out-of-order packet received: {seq_num}")
                         received[seq_num] = data
                         drtp.send_packet(ack_packet, data_addr)
                     else:
-                        # print(f"Duplicate packet received: {seq_num}")
+                        print(f"Duplicate packet received: {seq_num}")
                         drtp.send_packet(ack_packet, data_addr)
 
             except socket.timeout:
-                # print("\nTimeout occurred on the server.")
+                print("\nTimeout occurred on the server.")
                 continue
 
 
@@ -531,13 +531,13 @@ def sr_client(drtp, file, window_size, test_case):
                 drtp.socket.settimeout(timeout)
 
             except socket.timeout:
-                # print("\nTimeout occurred.")
+                print("\nTimeout occurred.")
                 # Retransmits the skipped packet aftes timeout occurs
                 for seq_num in packets_in_window.keys():
                     packet, sent = packets_in_window[seq_num]
                     if not sent or seq_num not in received:
                         drtp.send_packet(packet, (drtp.ip, drtp.port))
-                    # print(f"Resending packet with sequence number: {seq_num}")
+                        print(f"Resending packet with sequence number: {seq_num}")
 
         # Sends a packet with the FIN flag set after the file data has been sent
         print("\nSending FIN packet.")
