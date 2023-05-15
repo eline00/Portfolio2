@@ -45,19 +45,19 @@ All of these main components mentioned can be executed using different command l
 
     Running as a server
     To run the application as a server, use the -s flag:
-> python3 application.py -s -p 8080 -f received_photo.jpg 
+> python3 application.py -s -i < ip-address > -p < port > -f < received_file >
 
     Running as a client 
     To run the application as a client, use the -c flag:
-> python3 application.py -c -i 127.0.0.1 -p 8080 -f photo_to_send.jpg
+> python3 application.py -c -i < ip-address > -p < port > -f < file_to_send >
 
     Using a specific reliability function
     To use a specific reliability function, use the -r flag followed by the desired reliability function:
-> python3 application.py -c -i 127.0.0.1 -p 8080 -f photo_to_send.jpg -r gbn
+> python3 application.py -c -i < ip-address > -p < port > -f < file_to_send > -r < reliability function >
 
     Running a specific test case
     To run the application with a specific test case, use the -t flag followed by the desired test case.
-> python3 application.py -c -i 127.0.0.1 -p 8080 -f photo_to_send.jpg -t skip_ack
+> python3 application.py -c -i < ip-address > -p < port > -f < file_to_send > -t < test case >
     
 
 
