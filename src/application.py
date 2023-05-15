@@ -212,7 +212,7 @@ def stop_and_wait_client(drtp, file, test_case):
 					print(f"\nTimeout occurred. Resending packet with sequence number: {expected_seq}")
 					drtp.send_packet(packet, (drtp.ip, drtp.port))
 					
-			expected_seq += 1					# Increasing the expected sequence number
+			expected_seq += 1													# Increasing the expected sequence number
 
 		# Sends a packet with the FIN flag set after the file data has been sent
 		print("\nSending FIN packet.")
