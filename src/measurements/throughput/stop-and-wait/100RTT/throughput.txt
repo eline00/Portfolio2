@@ -7,7 +7,7 @@ Transmitting data...
 
 Sending FIN packet.
 
-Elapsed Time: 232.68 s
+Elapsed Time: 234.20 s
 Transferred data: 26.09 Mb
 Throughput: 0.11 Mbps
 
