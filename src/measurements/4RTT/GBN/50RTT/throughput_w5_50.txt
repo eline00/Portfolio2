@@ -1,6 +1,6 @@
 
 Sending SYN from the client. Waiting for SYN-ACK.
-Received SYN-ACK packet from the server
+Received SYN-ACK packet from the server. Sending SYN-ACK-ACK
 
 GBN client started.
 Transmitting data...
