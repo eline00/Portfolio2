@@ -1,0 +1,15 @@
+
+Sending SYN from the client. Waiting for SYN-ACK.
+Received SYN-ACK packet from the server. Seding SYN-ACK-ACK
+
+Stop-and-wait client started.
+Transmitting data...
+Sending duplicate packet with sequence number: 6
+
+Sending FIN packet.
+
+Elapsed Time: 38.23 s
+Transferred data: 26.09 Mb
+Throughput: 0.68 Mbps
+
+FIN-ACK received. Closing connection.
