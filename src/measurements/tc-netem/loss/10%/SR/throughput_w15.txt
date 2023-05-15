@@ -1,0 +1,14 @@
+
+Sending SYN from the client. Waiting for SYN-ACK.
+Received SYN-ACK packet from the server. Seding SYN-ACK-ACK
+
+Selective Repeat client started.
+Transmitting data...
+
+Sending FIN packet.
+
+Elapsed Time: 64.36 s
+Transferred data: 26.09 Mb
+Throughput: 0.41 Mbps
+
+FIN-ACK received. Closing connection.
