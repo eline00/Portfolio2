@@ -253,7 +253,7 @@ def gbn_server(drtp, file, test_case):
 
 					# Skips sending an ACK if the test_case is 'skip_ack' and skip_ack_counter is 0
 					if test_case == "skip_ack" and skip_ack_counter == 0:
-						time.sleep(0.5)
+						time.sleep(0.5)											# Giving the client time to notice the missing ACK
 						skip_ack_counter += 1
 						print(f"Skip ACK triggered at sequence number {seq_num} \n")
 					else:
